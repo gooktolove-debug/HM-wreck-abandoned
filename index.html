@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wreck/Abandoned Summary Board</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <style>
+    :root {
+      --bg:#f8fafc;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --primary:#0f172a;
+      --primary-soft:#e0f2fe;
+      --shadow:0 8px 22px rgba(15,23,42,.06);
+      --radius:20px;
+      --danger:#b91c1c;
+      --danger-soft:#fee2e2;
+      --wreck:#92400e;
+      --wreck-soft:#ffedd5;
+      --abandoned:#1d4ed8;
+      --abandoned-soft:#dbeafe;
+      --ready:#166534;
+      --ready-soft:#dcfce7;
+      --wip:#7c3aed;
+      --wip-soft:#ede9fe;
+      --completed:#475569;
+      --completed-soft:#e2e8f0;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text);background:var(--bg)}
+    .container{max-width:1480px;margin:0 auto;padding:24px}
+    .header{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+    .header h1{margin:0;font-size:32px;line-height:1.15}
+    .subtitle{margin-top:8px;color:var(--muted);font-size:14px;max-width:980px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    button{border:1px solid #cbd5e1;background:#fff;color:var(--text);border-radius:16px;padding:10px 14px;font-size:14px;font-weight:600;cursor:pointer;transition:.18s ease;box-shadow:0 1px 0 rgba(15,23,42,.03)}
+    button:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+    button.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+    button.small{padding:8px 12px;font-size:13px;border-radius:12px}
+    button.danger{border-color:#fecaca;color:var(--danger);background:#fff1f2}
+    button.icon-btn{width:40px;height:40px;padding:0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center}
+
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:20px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .stat-card{padding:20px}
+    .stat-top{display:flex;align-items:center;gap:12px}
+    .icon-box{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#f1f5f9;font-size:18px}
+    .stat-label{font-size:13px;color:var(--muted)}
+    .stat-value{font-size:30px;font-weight:800;line-height:1.1}
+    .stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+    .stat-wreck .icon-box{background:var(--wreck-soft)}
+    .stat-abandoned .icon-box{background:var(--abandoned-soft)}
+    .stat-wip .icon-box{background:var(--wip-soft)}
+    .stat-ready .icon-box{background:var(--ready-soft)}
+
+    .panel-head{padding:22px 22px 0 22px}
+    .panel-title{font-size:22px;font-weight:700;margin:0}
+    .panel-desc{font-size:14px;color:var(--muted);margin-top:8px}
+    .panel-body{padding:20px 22px 22px 22px}
+
+    .toolbar-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .filters-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .field, select.field, textarea.field, input[type="date"].field, input[type="number"].field, input[type="file"].field{
+      width:100%;border:1px solid #cbd5e1;border-radius:16px;padding:12px 14px;font-size:14px;outline:none;background:#fff
+    }
+    .field:focus{border-color:#0ea5e9;box-shadow:0 0 0 4px rgba(14,165,233,.12)}
+    textarea.field{min-height:90px;resize:vertical}
+
+    .main-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(360px,.95fr);gap:24px;align-items:start;margin-top:20px}
+    #map{height:720px;width:100%;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+    .legend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:16px}
+    .legend-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;font-size:12px;color:var(--muted)}
+    .legend-dot{width:12px;height:12px;border-radius:999px;display:inline-block}
+
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:#fff;margin-top:16px}
+    table{width:100%;border-collapse:collapse;min-width:1240px}
+    thead{background:#f8fafc;color:var(--muted)}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;font-size:13px;vertical-align:top}
+    tbody tr{cursor:pointer}
+    tbody tr:hover{background:#f8fafc}
+    tbody tr.active{background:var(--primary-soft)}
+    tbody tr.completed-row{opacity:.82}
+
+    .detail-card{position:sticky;top:24px}
+    .detail-top{background:#f8fafc;border-radius:18px;padding:16px;margin-bottom:16px}
+    .detail-top-row{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
+    .detail-top-title{margin-top:10px;font-size:22px;font-weight:800}
+    .detail-top-sub{margin-top:4px;color:var(--muted);font-size:14px}
+    .badges{display:flex;flex-wrap:wrap;gap:8px}
+    .badge{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:#f1f5f9;border:1px solid var(--line);font-size:12px;font-weight:700}
+    .badge.wreck{background:var(--wreck-soft);border-color:#fdba74;color:var(--wreck)}
+    .badge.abandoned{background:var(--abandoned-soft);border-color:#93c5fd;color:var(--abandoned)}
+    .badge.wip{background:var(--wip-soft);border-color:#c4b5fd;color:var(--wip)}
+    .badge.ready{background:var(--ready-soft);border-color:#86efac;color:var(--ready)}
+    .badge.completed{background:var(--completed-soft);border-color:#cbd5e1;color:var(--completed)}
+    .badge.alert{background:#fff1f2;border-color:#fecdd3;color:var(--danger)}
+    .detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .detail-item{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff}
+    .detail-key{font-size:12px;color:var(--muted)}
+    .detail-val{margin-top:6px;font-size:14px;font-weight:700;color:var(--text);word-break:break-word}
+    .detail-sub{margin-top:6px;font-size:12px;color:var(--muted);word-break:break-word;white-space:pre-line}
+    .muted-box{border:1px solid var(--line);border-radius:16px;padding:14px;font-size:14px;color:var(--muted);background:#f8fafc}
+    .hidden{display:none!important}
+    .alert-text{color:var(--danger)!important;font-weight:900!important}
+
+    .photo-wrap{grid-column:1 / -1}
+    .photo-card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+    .photo-main{width:100%;height:320px;object-fit:cover;background:#e2e8f0;display:block;cursor:zoom-in}
+    .photo-caption{padding:10px 14px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+    .thumb-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;padding:12px 14px;border-top:1px solid var(--line);background:#fff}
+    .thumb-item{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#f8fafc;cursor:pointer}
+    .thumb-item img{display:block;width:100%;height:72px;object-fit:cover}
+    .thumb-item.active{outline:2px solid #0ea5e9;outline-offset:1px}
+
+    .notes-section{grid-column:1 / -1;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;margin-top:4px}
+    .notes-header{padding:14px 16px;border-bottom:1px solid var(--line);background:#f8fafc;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .notes-add{padding:14px 16px;border-bottom:1px solid var(--line);background:#fff}
+    .notes-add-row{display:flex;gap:8px;align-items:flex-start}
+    .notes-list{padding:14px 16px;display:flex;flex-direction:column;gap:10px;max-height:320px;overflow-y:auto}
+    .note-item{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff}
+    .note-item-meta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .note-text{font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+    .notes-empty{text-align:center;color:var(--muted);font-size:13px;padding:16px}
+
+    .row-type{font-weight:700}
+    .row-type.wreck{color:var(--wreck)}
+    .row-type.abandoned{color:var(--abandoned)}
+    .status-pill{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--line);background:#fff}
+    .status-pill.wip{background:var(--wip-soft);border-color:#c4b5fd;color:var(--wip)}
+    .status-pill.ready{background:var(--ready-soft);border-color:#86efac;color:var(--ready)}
+    .status-pill.completed{background:var(--completed-soft);border-color:#cbd5e1;color:var(--completed)}
+
+    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:5000}
+    .modal-card{width:min(840px,100%);max-height:88vh;background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:0 24px 70px rgba(15,23,42,.24);display:flex;flex-direction:column;overflow:hidden}
+    .modal-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .modal-title{margin:0;font-size:18px;font-weight:800}
+    .modal-body{padding:20px;overflow-y:auto;flex:1}
+    .modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .form-grid .full{grid-column:1 / -1}
+    .field-label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}
+    .helper-text{font-size:12px;color:var(--muted);margin-top:6px}
+    .preview-box{border:1px dashed #cbd5e1;border-radius:16px;padding:12px;background:#f8fafc}
+    .preview-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+    .preview-thumb{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+    .preview-thumb img{display:block;width:100%;height:72px;object-fit:cover}
+
+    .lightbox-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.84);display:flex;align-items:center;justify-content:center;padding:20px;z-index:7000}
+    .lightbox-card{width:min(1100px,100%);height:min(88vh,820px);background:#0f172a;border-radius:24px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(15,23,42,.42)}
+    .lightbox-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.12);color:#fff}
+    .lightbox-title{font-size:14px;font-weight:700;color:#fff}
+    .lightbox-controls{display:flex;gap:8px;flex-wrap:wrap}
+    .lightbox-controls button{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.16)}
+    .lightbox-stage{position:relative;flex:1;overflow:hidden;background:#020617;display:flex;align-items:center;justify-content:center}
+    .lightbox-image{max-width:none;max-height:none;transform-origin:center center;cursor:grab;user-select:none;will-change:transform}
+    .lightbox-foot{padding:10px 16px;border-top:1px solid rgba(255,255,255,.12);color:#cbd5e1;font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+    @media (max-width:1200px){
+      .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .main-grid{grid-template-columns:1fr}
+      .detail-card{position:static}
+    }
+    @media (max-width:760px){
+      .container{padding:16px}
+      .stats,.filters-grid,.detail-grid,.legend,.form-grid{grid-template-columns:1fr}
+      .header h1{font-size:26px}
+      #map{height:460px}
+      table{min-width:980px}
+      .notes-add-row{flex-direction:column}
+      .lightbox-card{height:min(92vh,820px)}
+      .photo-main{height:240px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Wreck/Abandoned Summary Board</h1>
+        <div class="subtitle">Internal draft for tracking wreck and abandoned vessels. This version adds multi-photo upload, a zoomable image lightbox, DMM coordinate display, and the adjusted details layout.</div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="reloadBtn">Reset to Sample Data</button>
+        <button id="resetFiltersBtn">Reset Filters</button>
+        <button id="fitAllBtn">Zoom out to All Pins</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="card stat-card stat-wreck"><div class="stat-top"><div class="icon-box">⚓</div><div><div class="stat-label">Wreck</div><div class="stat-value" id="statWreck">0</div><div class="stat-sub">Total wreck vessels</div></div></div></div>
+      <div class="card stat-card stat-abandoned"><div class="stat-top"><div class="icon-box">🛶</div><div><div class="stat-label">Abandoned</div><div class="stat-value" id="statAbandoned">0</div><div class="stat-sub">Total abandoned vessels</div></div></div></div>
+      <div class="card stat-card stat-wip"><div class="stat-top"><div class="icon-box">🧾</div><div><div class="stat-label">Abandoned - WIP</div><div class="stat-value" id="statAbandonedWip">0</div><div class="stat-sub">In progress before final disposal stage</div></div></div></div>
+      <div class="card stat-card stat-ready"><div class="stat-top"><div class="icon-box">✅</div><div><div class="stat-label">Abandoned - Ready to dispose</div><div class="stat-value" id="statAbandonedReady">0</div><div class="stat-sub">Final Notice completed</div></div></div></div>
+    </div>
+
+    <div class="card">
+      <div class="panel-head">
+        <h2 class="panel-title">Live Filters</h2>
+        <div class="panel-desc">Search is currently limited to Vessel Name. Use the insert button to register a new vessel record.</div>
+      </div>
+      <div class="panel-body">
+        <div class="toolbar-row">
+          <div class="actions">
+            <button class="primary" id="insertVesselBtn">Insert New Vessel</button>
+            <button id="sharepointBtn" type="button">SharePoint</button>
+          </div>
+        </div>
+        <div class="filters-grid">
+          <input id="f_vesselName" class="field" placeholder="Search Vessel Name" />
+          <select id="f_type" class="field">
+            <option value="">All Types</option>
+            <option value="Wreck">Wreck</option>
+            <option value="Abandoned">Abandoned</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <div class="map-col">
+        <div class="card">
+          <div class="panel-head">
+            <h2 class="panel-title">Location Map</h2>
+            <div class="panel-desc">Completed vessels remain in the list but disappear from the map because coordinates are cleared.</div>
+          </div>
+          <div class="panel-body">
+            <div id="map"></div>
+            <div class="legend" id="legend">
+              <div class="legend-item"><span class="legend-dot" style="background:#92400e"></span><span>Wreck</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background:#2563eb"></span><span>Abandoned - WIP</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background:#16a34a"></span><span>Ready to dispose</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background:#64748b"></span><span>Completed (list only)</span></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Vessel Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Owner</th>
+                    <th>Lat</th>
+                    <th>Long</th>
+                    <th>Notified to HM</th>
+                    <th>MTA Notice expiry</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-col">
+        <div class="card detail-card">
+          <div class="panel-head">
+            <h2 class="panel-title">Details Information</h2>
+            <div class="panel-desc">Selected vessel summary and process milestones.</div>
+          </div>
+          <div class="panel-body">
+            <div id="detailEmpty" class="muted-box">Select a pin or a table row to view the vessel details.</div>
+            <div id="detailContent" class="hidden">
+              <div class="detail-top">
+                <div class="detail-top-row">
+                  <div>
+                    <div class="badges" id="detailBadges"></div>
+                    <div id="detailTitle" class="detail-top-title">-</div>
+                    <div id="detailStatus" class="detail-top-sub"></div>
+                  </div>
+                  <div><button id="editVesselBtn" class="small">Edit</button></div>
+                </div>
+              </div>
+              <div class="detail-grid" id="detailGrid"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="vesselModalBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="vesselModalTitle">
+      <div class="modal-head">
+        <h3 id="vesselModalTitle" class="modal-title">Insert New Vessel</h3>
+        <button id="vesselModalClose" class="small danger" type="button">Close</button>
+      </div>
+      <div class="modal-body">
+        <form id="vesselForm">
+          <div class="form-grid">
+            <div>
+              <label class="field-label" for="vesselNameInput">Vessel name</label>
+              <input id="vesselNameInput" class="field" required />
+            </div>
+            <div>
+              <label class="field-label" for="typeInput">Classification</label>
+              <select id="typeInput" class="field" required>
+                <option value="Wreck">Wreck</option>
+                <option value="Abandoned">Abandoned</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="latInput">Lat</label>
+              <input id="latInput" class="field" type="number" step="0.000001" />
+            </div>
+            <div>
+              <label class="field-label" for="lonInput">Long</label>
+              <input id="lonInput" class="field" type="number" step="0.000001" />
+            </div>
+            <div class="full">
+              <label class="field-label" for="ownerInput">Owner details</label>
+              <textarea id="ownerInput" class="field" placeholder="Owner name / contact / remarks"></textarea>
+            </div>
+            <div>
+              <label class="field-label" for="notifiedHmInput">Notified to HM</label>
+              <input id="notifiedHmInput" class="field" type="date" />
+            </div>
+            <div>
+              <label class="field-label" for="mtaIssuedInput">MTA Notice issued</label>
+              <input id="mtaIssuedInput" class="field" type="date" />
+            </div>
+            <div>
+              <label class="field-label" for="mtaExpiryInput">MTA Notice expiry</label>
+              <input id="mtaExpiryInput" class="field" type="date" />
+            </div>
+            <div class="full">
+              <label class="field-label" for="photoFileInput">Uploaded photos</label>
+              <input id="photoFileInput" class="field" type="file" accept="image/*" multiple />
+              <div class="helper-text">You can upload one or more images. In edit mode, newly selected photos are added to existing photos.</div>
+            </div>
+            <div class="full abandoned-only">
+              <label class="field-label" for="policeInput">Police Notification</label>
+              <input id="policeInput" class="field" type="date" />
+            </div>
+            <div class="abandoned-only">
+              <label class="field-label" for="news1Input">1st Newspaper listing</label>
+              <input id="news1Input" class="field" type="date" />
+            </div>
+            <div class="abandoned-only">
+              <label class="field-label" for="news2Input">2nd Newspaper listing</label>
+              <input id="news2Input" class="field" type="date" />
+            </div>
+            <div class="abandoned-only full">
+              <label class="field-label" for="finalNoticeInput">Final Notice</label>
+              <input id="finalNoticeInput" class="field" type="date" />
+            </div>
+            <div class="full">
+              <label class="field-label">Photo preview</label>
+              <div class="preview-box"><div id="photoPreviewStrip" class="preview-strip"></div><div id="photoPreviewEmpty" class="helper-text">No photos selected.</div></div>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="deleteVesselBtn" class="danger hidden">Delete Vessel</button>
+            <button type="button" id="cancelVesselBtn">Cancel</button>
+            <button type="submit" class="primary" id="saveVesselBtn">Save Vessel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="lightboxBackdrop" class="lightbox-backdrop hidden" aria-hidden="true">
+    <div class="lightbox-card" role="dialog" aria-modal="true" aria-labelledby="lightboxTitle">
+      <div class="lightbox-head">
+        <div class="lightbox-title" id="lightboxTitle">Photo viewer</div>
+        <div class="lightbox-controls">
+          <button id="prevPhotoBtn" class="small" type="button">◀ Prev</button>
+          <button id="zoomOutBtn" class="small" type="button">−</button>
+          <button id="resetZoomBtn" class="small" type="button">Reset</button>
+          <button id="zoomInBtn" class="small" type="button">＋</button>
+          <button id="nextPhotoBtn" class="small" type="button">Next ▶</button>
+          <button id="lightboxCloseBtn" class="small danger" type="button">Close</button>
+        </div>
+      </div>
+      <div class="lightbox-stage" id="lightboxStage">
+        <img id="lightboxImage" class="lightbox-image" alt="Selected vessel photo" draggable="false" />
+      </div>
+      <div class="lightbox-foot">
+        <div id="lightboxMeta">Photo 1 / 1</div>
+        <div>Zoom with buttons or mouse wheel</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const MAP_CENTER = [-36.8485, 174.7633];
+    const MAP_ZOOM = 11;
+    const SEARCH_FOCUS_ZOOM = 14;
+    const STORAGE_KEY_V4 = 'wreckAbandonedBoardDataV4';
+    const STORAGE_KEY_V3 = 'wreckAbandonedBoardDataV3';
+    const SHAREPOINT_URL = 'https://aucklandtransport.sharepoint.com/sites/ahmfs/Abandoned%20Vessel%20Paperwork/Forms/AllItems.aspx';
+
+    // ===== Supabase config =====
+    // Replace the placeholders below before deployment.
+    // Note: because email login was removed, your Supabase RLS policies must allow anon access
+    // for the required tables/storage actions if you want the app to work without authentication.
+    const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
+    const SUPABASE_ANON_KEY = 'YOUR-ANON-KEY';
+    const SUPABASE_BUCKET = 'wreck-abandoned-photos';
+
+    const state = {
+      records: [],
+      filtered: [],
+      selectedId: null,
+      markers: {},
+      layerGroup: null,
+      modalMode: 'insert',
+      editingId: null,
+      pendingPhotos: [],
+      detailPhotoIndex: 0,
+      supabaseConfigured: false,
+      lightbox: {
+        recordId: null,
+        photos: [],
+        index: 0,
+        zoom: 1,
+        panX: 0,
+        panY: 0,
+        dragging: false,
+        dragStartX: 0,
+        dragStartY: 0,
+        startPanX: 0,
+        startPanY: 0
+      }
+    };
+
+    let supabaseClient = null;
+
+    const el = (id) => document.getElementById(id);
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (m) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
+
+    function svgPlaceholder(label, color) {
+      const safeLabel = encodeURIComponent(label || 'Vessel');
+      const safeColor = encodeURIComponent(color || '#64748b');
+      return `data:image/svg+xml;charset=UTF-8,` +
+        `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='700' viewBox='0 0 1200 700'>` +
+        `<rect width='1200' height='700' fill='${safeColor}'/>` +
+        `<text x='50%' y='48%' dominant-baseline='middle' text-anchor='middle' font-family='Segoe UI, Arial, sans-serif' font-size='44' font-weight='700' fill='white'>${safeLabel}</text>` +
+        `<text x='50%' y='58%' dominant-baseline='middle' text-anchor='middle' font-family='Segoe UI, Arial, sans-serif' font-size='24' fill='white'>Draft photo placeholder</text>` +
+        `</svg>`;
+    }
+
+    const SAMPLE_DATA = [
+    {
+        "id": "W1",
+        "vesselName": "Spirit of Breaker Bay",
+        "type": "Wreck",
+        "lat": -36.8811833,
+        "lon": 174.8864,
+        "owner": "Vessel sank on mooring and declared wreck. Owner responded that he would recover the vessel. HM patrol checked in Nov 2021 and couldn't see it. BG confirmed that he has talked w...",
+        "notifiedToHm": "",
+        "mtaIssued": "2021-09-30",
+        "mtaExpiry": "2021-10-30",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Vessel sank on mooring and declared wreck. Owner responded that he would recover the vessel. HM patrol checked in Nov 2021 and couldn't see it. BG confirmed that he has talked with the owner recently and vessel hasn't been recovered",
+                "createdAt": "2021-09-30T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "W2",
+        "vesselName": "Brezzin",
+        "type": "Wreck",
+        "lat": -36.8581833,
+        "lon": 174.8902,
+        "owner": "Unknown",
+        "notifiedToHm": "",
+        "mtaIssued": "2023-09-26",
+        "mtaExpiry": "2023-10-26",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Vessel sank on mooring, owner not in financial state to recover the vessel",
+                "createdAt": "2023-09-26T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "W3",
+        "vesselName": "Lady Doreen",
+        "type": "Wreck",
+        "lat": -36.86435,
+        "lon": 174.6569333,
+        "owner": "Sunk, now sitting on the mangrove. Salvage operation planned on 11/5/2023",
+        "notifiedToHm": "",
+        "mtaIssued": "2023-02-03",
+        "mtaExpiry": "2023-03-05",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Sunk, now sitting on the mangrove. Salvage operation planned on 11/5/2023",
+                "createdAt": "2023-02-03T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "W4",
+        "vesselName": "Serenity",
+        "type": "Wreck",
+        "lat": -36.7980969722222,
+        "lon": 175.039776972222,
+        "owner": "Ian Batten – 022 120 1521/ kebatten@gmail.com | 16 Waitai Road, Ostend, Waiheke Island",
+        "notifiedToHm": "",
+        "mtaIssued": "2025-06-17",
+        "mtaExpiry": "2025-07-17",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Ian Batten – 022 120 1521/ kebatten@gmail.com 
+16 Waitai Road, Ostend, Waiheke Island",
+                "createdAt": "2025-06-17T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "W5",
+        "vesselName": "Tahi",
+        "type": "Wreck",
+        "lat": -36.8225333,
+        "lon": 174.7552167,
+        "owner": "David Melton – 021 293 8502 | 5 Fox Place, Cloverlea, Palmerston North 4412",
+        "notifiedToHm": "",
+        "mtaIssued": "2025-07-21",
+        "mtaExpiry": "2025-08-20",
+        "photos": [],
+        "notes": [
+            {
+                "text": "David Melton – 021 293 8502 
+5 Fox Place, Cloverlea, Palmerston North 4412",
+                "createdAt": "2025-07-21T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "W6",
+        "vesselName": "Strait Aro II",
+        "type": "Wreck",
+        "lat": -36.779,
+        "lon": 174.6639667,
+        "owner": "David Redden - 027 206 1025/ reddend941@gmail.com | 7/10 Coutts Avenue, Paihia",
+        "notifiedToHm": "",
+        "mtaIssued": "2026-02-12",
+        "mtaExpiry": "2026-03-14",
+        "photos": [],
+        "notes": [
+            {
+                "text": "David Redden - 027 206 1025/ reddend941@gmail.com
+	7/10 Coutts Avenue, Paihia",
+                "createdAt": "2026-02-12T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "W7",
+        "vesselName": "Prime Time",
+        "type": "Wreck",
+        "lat": -36.84783,
+        "lon": 174.79862,
+        "owner": "Mingguan Bu - 021 512 998/ mgbu12345@outlook.com | 15 Lockington Avenue, Henderson, Auckland 0612",
+        "notifiedToHm": "",
+        "mtaIssued": "2026-02-13",
+        "mtaExpiry": "2026-03-15",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Mingguan Bu - 021 512 998/ mgbu12345@outlook.com
+	15 Lockington Avenue, Henderson, Auckland 0612",
+                "createdAt": "2026-02-13T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "W8",
+        "vesselName": "Puriri",
+        "type": "Wreck",
+        "lat": -36.8755667,
+        "lon": 174.9027833,
+        "owner": "George Hayward - 022 1859 529/ hori.pakeha@hotmail.com | 179 Helenslee Road, Pokeno 2472",
+        "notifiedToHm": "",
+        "mtaIssued": "2026-02-18",
+        "mtaExpiry": "2026-03-20",
+        "photos": [],
+        "notes": [
+            {
+                "text": "George Hayward - 022 1859 529/ hori.pakeha@hotmail.com
+	179 Helenslee Road, Pokeno 2472",
+                "createdAt": "2026-02-18T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "W9",
+        "vesselName": "Boadicea",
+        "type": "Wreck",
+        "lat": -36.913,
+        "lon": 174.8564833,
+        "owner": "Nick Whall - 0224658611, 0274731300, 027 765 2775, 027 242 3378/ serviceafloat@gmail.com | 29 Taniwha Street, Wai O Taiki Bay, Auckland 1072",
+        "notifiedToHm": "",
+        "mtaIssued": "2026-03-17",
+        "mtaExpiry": "2026-04-16",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Nick Whall - 0224658611, 0274731300, 027 765 2775, 027 242 3378/ serviceafloat@gmail.com
+29 Taniwha Street, Wai O Taiki Bay, Auckland 1072",
+                "createdAt": "2026-03-17T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "W10",
+        "vesselName": "No name",
+        "type": "Wreck",
+        "lat": -36.6173833,
+        "lon": 174.7686833,
+        "owner": "Jason Craig - 021 236 0802/ 2jasoncraig@gmail.com | 34 Sheffield Road, Hellensville",
+        "notifiedToHm": "",
+        "mtaIssued": "2026-04-13",
+        "mtaExpiry": "2026-05-13",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Jason Craig - 021 236 0802/ 2jasoncraig@gmail.com 
+	      	34 Sheffield Road, Hellensville",
+                "createdAt": "2026-04-13T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "A1",
+        "vesselName": "Nothing Else Matters",
+        "type": "Abandoned",
+        "lat": -36.4265667,
+        "lon": 174.84055,
+        "owner": "Unknown",
+        "notifiedToHm": "",
+        "mtaIssued": "2025-07-24",
+        "mtaExpiry": "2025-08-23",
+        "policeNotification": "2025-07-25",
+        "newspaper1": "2025-07-30",
+        "newspaper2": "2025-08-01",
+        "finalNotice": "2025-09-10",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Unknown",
+                "createdAt": "2025-07-24T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "A2",
+        "vesselName": "No name (12m Ferro Cement)",
+        "type": "Abandoned",
+        "lat": -36.8375167,
+        "lon": 174.7304167,
+        "owner": "Vessel pirating mooring since 2021, no details of owner found",
+        "notifiedToHm": "",
+        "mtaIssued": "2025-10-02",
+        "mtaExpiry": "2025-11-01",
+        "policeNotification": "2025-10-03",
+        "newspaper1": "2026-03-25",
+        "newspaper2": "2026-03-27",
+        "finalNotice": "2026-04-22",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Vessel pirating mooring since 2021, no details of owner found",
+                "createdAt": "2025-10-02T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "A3",
+        "vesselName": "Platinum One",
+        "type": "Abandoned",
+        "lat": -36.84705,
+        "lon": 174.8053667,
+        "owner": "Karl Lance Haeger - 027 215 2410/ karlhaeger19372@gmail.com | Avondale Motor Park , 46 Bollard Ave, Mt Albert, Auckland 0600",
+        "notifiedToHm": "",
+        "mtaIssued": "2025-11-12",
+        "mtaExpiry": "2025-12-12",
+        "policeNotification": "2026-04-02",
+        "newspaper1": "2026-03-25",
+        "newspaper2": "2026-03-27",
+        "finalNotice": "2026-04-22",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Karl Lance Haeger - 027 215 2410/ karlhaeger19372@gmail.com 
+	Avondale Motor Park ,  46  Bollard Ave, Mt Albert, Auckland 0600",
+                "createdAt": "2025-11-12T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "A4",
+        "vesselName": "Manah Prasadha",
+        "type": "Abandoned",
+        "lat": -36.8814333,
+        "lon": 174.88295,
+        "owner": "Dave Humphreys - 022 315 0013/ dave.autocare@hotmail.com / 22 Victory Road, Papatoetoe | New owner: Nathan Simon – 0218763809/ +64 210 876 3809 (from PMU)",
+        "notifiedToHm": "",
+        "mtaIssued": "2026-01-12",
+        "mtaExpiry": "2026-02-11",
+        "policeNotification": "2026-01-13",
+        "newspaper1": "2026-03-25",
+        "newspaper2": "2026-03-27",
+        "finalNotice": "2026-04-22",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Dave Humphreys - 022 315 0013/ dave.autocare@hotmail.com / 22 Victory Road, Papatoetoe
+New owner: Nathan Simon – 0218763809/ +64 210 876 3809 (from PMU)",
+                "createdAt": "2026-01-12T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "A5",
+        "vesselName": "Gryphon",
+        "type": "Abandoned",
+        "lat": -36.44245,
+        "lon": 174.8332333,
+        "owner": "Joshua David STEVENSON – 021370333/ joshsteve270@gmail.com | 29 Ruakaka Ridge View, Ruakaka 0171",
+        "notifiedToHm": "",
+        "mtaIssued": "2026-04-21",
+        "mtaExpiry": "2026-05-21",
+        "policeNotification": "2026-04-02",
+        "newspaper1": "2026-03-25",
+        "newspaper2": "2026-03-27",
+        "finalNotice": "2026-04-22",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Joshua David STEVENSON – 021370333/ joshsteve270@gmail.com 
+29 Ruakaka Ridge View, Ruakaka 0171",
+                "createdAt": "2026-04-21T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "A6",
+        "vesselName": "Figaro",
+        "type": "Abandoned",
+        "lat": -36.8811667,
+        "lon": 174.8827333,
+        "owner": "Shane James Witana – 0273572056/ shanewitana@gmail.com Address: 93 Tiraumea Drive, Pakuranga, Auckland 2010 or 36 Sunderland Road, Half Moon Bay, Auckland 2012",
+        "notifiedToHm": "",
+        "mtaIssued": "2026-03-31",
+        "mtaExpiry": "2026-04-30",
+        "policeNotification": "2026-04-02",
+        "newspaper1": "2026-03-25",
+        "newspaper2": "2026-03-27",
+        "finalNotice": "2026-04-22",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Shane James Witana – 0273572056/ shanewitana@gmail.com Address: 93 Tiraumea Drive, Pakuranga, Auckland 2010 or 36 Sunderland Road, Half Moon Bay, Auckland 2012",
+                "createdAt": "2026-03-31T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "A7",
+        "vesselName": "Haeata",
+        "type": "Abandoned",
+        "lat": -36.7759167,
+        "lon": 174.66255,
+        "owner": "Robert Reynolds - 021 054 7139/ booboo.reynolds@gmail.com | 57 Hikurangi Street, Trentham, Upper Hutt 5018",
+        "notifiedToHm": "",
+        "mtaIssued": "2026-04-01",
+        "mtaExpiry": "2026-05-01",
+        "policeNotification": "2026-04-02",
+        "newspaper1": "2026-03-25",
+        "newspaper2": "2026-03-27",
+        "finalNotice": "2026-04-22",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Robert Reynolds - 021 054 7139/ booboo.reynolds@gmail.com 
+57 Hikurangi Street, Trentham, Upper Hutt 5018",
+                "createdAt": "2026-04-01T09:00:00"
+            }
+        ]
+    },
+    {
+        "id": "A8",
+        "vesselName": "No name (or Secsea)",
+        "type": "Abandoned",
+        "lat": -36.4259249722222,
+        "lon": 174.735045972222,
+        "owner": "Richard Wendell - 020 407 90340/ 102mountainrd@gmail.com | 1a Duncan Avenue, Te Atatu South, Auckland 0610",
+        "notifiedToHm": "",
+        "mtaIssued": "2025-10-07",
+        "mtaExpiry": "2025-11-06",
+        "policeNotification": "2025-10-08",
+        "newspaper1": "2026-03-25",
+        "newspaper2": "2026-03-27",
+        "finalNotice": "2026-04-22",
+        "photos": [],
+        "notes": [
+            {
+                "text": "Richard Wendell - 020 407 90340/ 102mountainrd@gmail.com 
+1a Duncan Avenue, Te Atatu South, Auckland 0610",
+                "createdAt": "2025-10-07T09:00:00"
+            }
+        ]
+    }
+];
+
+    const map = L.map('map', { preferCanvas:true }).setView(MAP_CENTER, MAP_ZOOM);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap contributors' }).addTo(map);
+
+    function formatDate(value) {
+      if (!value) return '-';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toLocaleDateString('en-NZ', { day:'numeric', month:'short', year:'numeric' });
+    }
+
+    function formatDateTime(value) {
+      if (!value) return '-';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value || '-';
+      return d.toLocaleString('en-NZ', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    }
+
+    function isExpired(dateString) {
+      if (!dateString) return false;
+      const input = new Date(dateString + 'T23:59:59');
+      return input.getTime() < Date.now();
+    }
+
+    function hasCoordinates(record) {
+      return typeof record?.lat === 'number' && typeof record?.lon === 'number' && !Number.isNaN(record.lat) && !Number.isNaN(record.lon);
+    }
+
+    function formatDMM(value, kind) {
+      if (typeof value !== 'number' || Number.isNaN(value)) return '-';
+      const abs = Math.abs(value);
+      const degrees = Math.floor(abs);
+      const minutes = (abs - degrees) * 60;
+      const hemisphere = kind === 'lat' ? (value >= 0 ? 'N' : 'S') : (value >= 0 ? 'E' : 'W');
+      const degPad = kind === 'lat' ? 2 : 3;
+      return `${String(degrees).padStart(degPad, '0')}° ${minutes.toFixed(4)}′ ${hemisphere}`;
+    }
+
+    function deriveStatus(record) {
+      if (record.deletedAt) return 'Completed';
+      if (record.type === 'Abandoned') return record.finalNotice ? 'Ready to dispose' : 'WIP';
+      if (record.type === 'Wreck') {
+        if (record.mtaExpiry && isExpired(record.mtaExpiry)) return 'Ready to dispose';
+        if (record.mtaIssued) return 'WIP';
+        return '-';
+      }
+      return '-';
+    }
+
+    function statusClass(status) {
+      if (status === 'Completed') return 'completed';
+      if (status === 'Ready to dispose') return 'ready';
+      if (status === 'WIP') return 'wip';
+      return '';
+    }
+
+    function pinColor(record) {
+      const status = deriveStatus(record);
+      if (status === 'Completed') return '#64748b';
+      if (status === 'Ready to dispose') return '#16a34a';
+      if (record.type === 'Wreck') return '#92400e';
+      return '#2563eb';
+    }
+
+    function normalizePhotos(record) {
+      if (Array.isArray(record.photoMeta) && record.photoMeta.length) return record.photoMeta.map(photo => photo.url).filter(Boolean);
+      if (Array.isArray(record.photos) && record.photos.length) return record.photos.filter(Boolean);
+      if (record.photo) return [record.photo];
+      return [];
+    }
+
+    function withDerivedFields(record) {
+      return {
+        ...record,
+        lat: (record.lat === '' || record.lat === null || record.lat === undefined) ? null : Number(record.lat),
+        lon: (record.lon === '' || record.lon === null || record.lon === undefined) ? null : Number(record.lon),
+        notes: Array.isArray(record.notes) ? [...record.notes].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)) : [],
+        photoMeta: Array.isArray(record.photoMeta) ? record.photoMeta.filter(Boolean) : [],
+        photos: normalizePhotos(record),
+        status: deriveStatus(record)
+      };
+    }
+
+    function isSupabaseConfigured() {
+      return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_ANON_KEY.includes('YOUR-ANON-KEY'));
+    }
+
+    function isSupabaseActive() {
+      return state.supabaseConfigured && !!supabaseClient;
+    }
+
+    function localPersistRecords() {
+      localStorage.setItem(STORAGE_KEY_V4, JSON.stringify(state.records));
+    }
+
+    function loadDataFromLocalStorage() {
+      try {
+        const rawV4 = localStorage.getItem(STORAGE_KEY_V4);
+        if (rawV4) {
+          const parsed = JSON.parse(rawV4);
+          if (Array.isArray(parsed)) return parsed.map(withDerivedFields);
+        }
+        const rawV3 = localStorage.getItem(STORAGE_KEY_V3);
+        if (rawV3) {
+          const parsed = JSON.parse(rawV3);
+          if (Array.isArray(parsed)) return parsed.map(withDerivedFields);
+        }
+        return null;
+      } catch (err) {
+        console.error(err);
+        return null;
+      }
+    }
+
+    async function initializeSupabase() {
+      state.supabaseConfigured = isSupabaseConfigured();
+      if (!state.supabaseConfigured) return;
+      try {
+        if (!window.supabase?.createClient) throw new Error('Supabase JS library failed to load.');
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      } catch (error) {
+        console.error(error);
+        alert(`Supabase connection error: ${error.message || error}`);
+      }
+    }
+
+    function selectedRecord() {
+      return state.filtered.find(r => r.id === state.selectedId) || null;
+    }
+
+    function currentFilters() {
+      return { vesselName: el('f_vesselName').value.trim().toLowerCase(), type: el('f_type').value };
+    }
+
+    function applyFilters() {
+      const f = currentFilters();
+      state.filtered = state.records.filter(r => {
+        if (f.vesselName && !r.vesselName.toLowerCase().includes(f.vesselName)) return false;
+        if (f.type && r.type !== f.type) return false;
+        return true;
+      });
+      if (!state.filtered.some(r => r.id === state.selectedId)) state.selectedId = state.filtered[0]?.id || null;
+    }
+
+    function renderStats() {
+      const source = state.filtered.length ? state.filtered : state.records;
+      const activeSource = source.filter(r => !r.deletedAt);
+      el('statWreck').textContent = activeSource.filter(r => r.type === 'Wreck').length;
+      el('statAbandoned').textContent = activeSource.filter(r => r.type === 'Abandoned').length;
+      el('statAbandonedWip').textContent = activeSource.filter(r => r.type === 'Abandoned' && deriveStatus(r) === 'WIP').length;
+      el('statAbandonedReady').textContent = activeSource.filter(r => r.type === 'Abandoned' && deriveStatus(r) === 'Ready to dispose').length;
+    }
+
+    function popupHtml(r) {
+      const expiry = isExpired(r.mtaExpiry) ? `<span class="alert-text">${escapeHtml(formatDate(r.mtaExpiry))}</span>` : escapeHtml(formatDate(r.mtaExpiry));
+      const latVal = hasCoordinates(r) ? `${Number(r.lat).toFixed(6)}<br><span style="color:#64748b">${escapeHtml(formatDMM(Number(r.lat), 'lat'))}</span>` : '-';
+      const lonVal = hasCoordinates(r) ? `${Number(r.lon).toFixed(6)}<br><span style="color:#64748b">${escapeHtml(formatDMM(Number(r.lon), 'lon'))}</span>` : '-';
+      return `
+        <div style="font-family:ui-sans-serif,-apple-system,Segoe UI,sans-serif;min-width:260px;">
+          <div style="font-size:15px;font-weight:800;color:#0f172a;">${escapeHtml(r.vesselName)}</div>
+          <div style="margin-top:6px;"><strong>Type:</strong> ${escapeHtml(r.type)}</div>
+          <div style="margin-top:4px;"><strong>Status:</strong> ${escapeHtml(deriveStatus(r))}</div>
+          <div style="margin-top:4px;"><strong>Owner:</strong> ${escapeHtml(r.owner || '-')}</div>
+          <div style="margin-top:6px;"><strong>Lat:</strong><br>${latVal}</div>
+          <div style="margin-top:6px;"><strong>Long:</strong><br>${lonVal}</div>
+          <div style="margin-top:6px;"><strong>MTA Notice expiry:</strong> ${expiry}</div>
+        </div>`;
+    }
+
+    function renderMap(resetBounds=false) {
+      if (state.layerGroup) map.removeLayer(state.layerGroup);
+      state.markers = {};
+      state.layerGroup = L.layerGroup();
+      const bounds = [];
+      state.filtered.filter(hasCoordinates).forEach(r => {
+        const marker = L.circleMarker([r.lat, r.lon], {
+          radius: state.selectedId === r.id ? 8 : 6,
+          color:'#ffffff',
+          weight: state.selectedId === r.id ? 2.5 : 1.5,
+          fillColor: pinColor(r),
+          fillOpacity:.95
+        });
+        marker.bindPopup(popupHtml(r));
+        marker.on('click', () => { state.selectedId = r.id; renderAll(false, false, false); });
+        state.markers[r.id] = marker;
+        state.layerGroup.addLayer(marker);
+        bounds.push([r.lat, r.lon]);
+      });
+      state.layerGroup.addTo(map);
+      if (bounds.length && resetBounds) map.fitBounds(bounds, { padding:[24,24] });
+    }
+
+    function renderTable() {
+      const tbody = el('tableBody');
+      if (!state.filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#64748b;padding:40px 16px;">No vessels match the current filter.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = state.filtered.map(r => {
+        const active = state.selectedId === r.id ? 'active' : '';
+        const completedClass = deriveStatus(r) === 'Completed' ? 'completed-row' : '';
+        const expiryHtml = isExpired(r.mtaExpiry) ? `<span class="alert-text">${escapeHtml(formatDate(r.mtaExpiry))}</span>` : escapeHtml(formatDate(r.mtaExpiry));
+        const typeClass = r.type === 'Wreck' ? 'wreck' : 'abandoned';
+        const status = deriveStatus(r);
+        const statusPill = status !== '-' ? `<span class="status-pill ${statusClass(status)}">${escapeHtml(status)}</span>` : '-';
+        return `
+          <tr class="${active} ${completedClass}" data-id="${escapeHtml(r.id)}">
+            <td><strong>${escapeHtml(r.vesselName)}</strong></td>
+            <td><span class="row-type ${typeClass}">${escapeHtml(r.type)}</span></td>
+            <td>${statusPill}</td>
+            <td>${escapeHtml(r.owner || '-')}</td>
+            <td>${hasCoordinates(r) ? Number(r.lat).toFixed(6) : '-'}</td>
+            <td>${hasCoordinates(r) ? Number(r.lon).toFixed(6) : '-'}</td>
+            <td>${escapeHtml(formatDate(r.notifiedToHm))}</td>
+            <td>${expiryHtml}</td>
+          </tr>`;
+      }).join('');
+      tbody.querySelectorAll('tr[data-id]').forEach(tr => tr.addEventListener('click', () => { state.selectedId = tr.dataset.id; renderAll(false, false, true); }));
+    }
+
+    function detailItem(label, value, sub = '', isAlert = false) {
+      return `
+        <div class="detail-item">
+          <div class="detail-key">${escapeHtml(label)}</div>
+          <div class="detail-val ${isAlert ? 'alert-text' : ''}">${value}</div>
+          ${sub ? `<div class="detail-sub ${isAlert ? 'alert-text' : ''}">${escapeHtml(sub)}</div>` : ''}
+        </div>`;
+    }
+
+    function renderPhotoGallery(rec) {
+      const photos = rec.photos && rec.photos.length ? rec.photos : [svgPlaceholder(rec.vesselName, rec.type === 'Wreck' ? '#92400e' : '#1d4ed8')];
+      const selectedIndex = Math.min(state.detailPhotoIndex, photos.length - 1);
+      state.detailPhotoIndex = selectedIndex;
+      const thumbHtml = photos.map((src, index) => `
+        <div class="thumb-item ${index === selectedIndex ? 'active' : ''}" data-photo-index="${index}" title="Open photo ${index + 1}">
+          <img src="${src}" alt="${escapeHtml(rec.vesselName)} photo ${index + 1}" />
+        </div>`).join('');
+      return `
+        <div class="photo-wrap">
+          <div class="photo-card">
+            <img src="${photos[selectedIndex]}" id="detailMainPhoto" class="photo-main" alt="${escapeHtml(rec.vesselName)} main photo" />
+            <div class="photo-caption">Uploaded photos (${photos.length}) • Click image to open zoom viewer</div>
+            <div class="thumb-strip" id="detailThumbStrip">${thumbHtml}</div>
+          </div>
+        </div>`;
+    }
+
+    function renderNotes(rec) {
+      const notes = Array.isArray(rec.notes) ? [...rec.notes].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
+      const notesHtml = notes.length ? notes.map(note => `
+        <div class="note-item">
+          <div class="note-item-meta"><span>${escapeHtml(formatDateTime(note.createdAt))}</span></div>
+          <div class="note-text">${escapeHtml(note.text)}</div>
+        </div>`).join('') : `<div class="notes-empty">No notes yet for this vessel.</div>`;
+      return `
+        <div class="notes-section">
+          <div class="notes-header">
+            <strong>Notes</strong>
+            <span style="font-size:12px;color:var(--muted)">${notes.length} entr${notes.length === 1 ? 'y' : 'ies'}</span>
+          </div>
+          <div class="notes-add">
+            <div class="notes-add-row">
+              <textarea id="noteInput" class="field" placeholder="Add a note for this vessel..."></textarea>
+              <button id="addNoteBtn" class="primary" type="button">Add Note</button>
+            </div>
+          </div>
+          <div class="notes-list" id="notesList">${notesHtml}</div>
+        </div>`;
+    }
+
+    function bindDetailPhotoEvents(rec) {
+      const mainPhoto = el('detailMainPhoto');
+      if (mainPhoto) mainPhoto.addEventListener('click', () => openLightbox(rec.id, state.detailPhotoIndex));
+      const strip = el('detailThumbStrip');
+      if (strip) {
+        strip.querySelectorAll('[data-photo-index]').forEach(node => {
+          node.addEventListener('click', () => {
+            state.detailPhotoIndex = Number(node.dataset.photoIndex);
+            renderDetail();
+          });
+        });
+      }
+    }
+
+    function renderDetail() {
+      const rec = selectedRecord();
+      const empty = el('detailEmpty');
+      const content = el('detailContent');
+      if (!rec) {
+        empty.textContent = 'Select a pin or a table row to view the vessel details.';
+        empty.classList.remove('hidden');
+        content.classList.add('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      content.classList.remove('hidden');
+      const status = deriveStatus(rec);
+      const badges = [`<span class="badge ${rec.type === 'Wreck' ? 'wreck' : 'abandoned'}">${escapeHtml(rec.type)}</span>`];
+      if (status !== '-') badges.push(`<span class="badge ${statusClass(status)}">${escapeHtml(status)}</span>`);
+      if (isExpired(rec.mtaExpiry) && !rec.deletedAt) badges.push('<span class="badge alert">MTA Notice expired</span>');
+      if (rec.deletedAt) badges.push('<span class="badge completed">Hidden from map</span>');
+      el('detailBadges').innerHTML = badges.join('');
+      el('detailTitle').textContent = rec.vesselName;
+      if (rec.deletedAt) {
+        el('detailStatus').textContent = `Completed on ${formatDateTime(rec.deletedAt)}. Coordinates cleared from map.`;
+      } else if (rec.type === 'Abandoned') {
+        el('detailStatus').textContent = rec.finalNotice ? 'Abandoned vessel ready to dispose.' : 'Abandoned vessel still in process (WIP).';
+      } else {
+        el('detailStatus').textContent = status === 'Ready to dispose' ? 'Wreck vessel with expired MTA Notice.' : 'Wreck vessel currently in progress (WIP).';
+      }
+      const expiryHtml = isExpired(rec.mtaExpiry) ? `<span class="alert-text">${escapeHtml(formatDate(rec.mtaExpiry))}</span>` : escapeHtml(formatDate(rec.mtaExpiry));
+      let html = '';
+      html += renderPhotoGallery(rec);
+      html += detailItem('Vessel name', escapeHtml(rec.vesselName));
+      html += detailItem('Classification', escapeHtml(rec.type));
+      html += detailItem('Status', escapeHtml(status));
+      html += detailItem('Owner details', escapeHtml(rec.owner || '-'));
+      html += detailItem('Lat', hasCoordinates(rec) ? escapeHtml(Number(rec.lat).toFixed(6)) : '-', hasCoordinates(rec) ? formatDMM(Number(rec.lat), 'lat') : (rec.deletedAt ? 'Cleared after deletion / completion' : ''));
+      html += detailItem('Long', hasCoordinates(rec) ? escapeHtml(Number(rec.lon).toFixed(6)) : '-', hasCoordinates(rec) ? formatDMM(Number(rec.lon), 'lon') : (rec.deletedAt ? 'Cleared after deletion / completion' : ''));
+      html += detailItem('Notified to HM', escapeHtml(formatDate(rec.notifiedToHm)));
+      html += detailItem('MTA Notice issued', escapeHtml(formatDate(rec.mtaIssued)));
+      html += detailItem('MTA Notice expiry', expiryHtml, isExpired(rec.mtaExpiry) && !rec.deletedAt ? 'Expired based on today' : '', isExpired(rec.mtaExpiry) && !rec.deletedAt);
+      if (rec.type === 'Abandoned') {
+        html += detailItem('Police Notification', escapeHtml(formatDate(rec.policeNotification)));
+        html += detailItem('1st Newspaper listing', escapeHtml(formatDate(rec.newspaper1)));
+        html += detailItem('2nd Newspaper listing', escapeHtml(formatDate(rec.newspaper2)));
+        html += detailItem('Final Notice', escapeHtml(formatDate(rec.finalNotice)));
+      }
+      if (rec.deletedAt) html += detailItem('Completed / Delete timestamp', escapeHtml(formatDateTime(rec.deletedAt)));
+      html += renderNotes(rec);
+      el('detailGrid').innerHTML = html;
+      bindDetailPhotoEvents(rec);
+      const addNoteBtn = el('addNoteBtn');
+      if (addNoteBtn) addNoteBtn.addEventListener('click', addNoteToSelectedRecord);
+      const noteInput = el('noteInput');
+      if (noteInput) noteInput.addEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+          event.preventDefault();
+          addNoteToSelectedRecord();
+        }
+      });
+      Object.entries(state.markers).forEach(([id, marker]) => {
+        const record = state.filtered.find(r => r.id === id);
+        if (!record) return;
+        marker.setStyle({ radius: rec.id === id ? 8 : 6, color: rec.id === id ? '#0f172a' : '#ffffff', weight: rec.id === id ? 2.5 : 1.5, fillColor: pinColor(record), fillOpacity: .95 });
+      });
+    }
+
+    function focusSelectedMarker(openPopup=true) {
+      const rec = selectedRecord();
+      if (!rec || !state.markers[rec.id] || !hasCoordinates(rec)) return;
+      map.setView([rec.lat, rec.lon], Math.max(map.getZoom(), SEARCH_FOCUS_ZOOM), { animate:true });
+      if (openPopup) state.markers[rec.id].openPopup();
+    }
+
+    function renderAll(reapplyFilters=true, resetBounds=false, autoFocus=false) {
+      if (reapplyFilters) applyFilters();
+      state.records = state.records.map(withDerivedFields);
+      renderStats();
+      renderMap(resetBounds);
+      renderTable();
+      renderDetail();
+      if (autoFocus) focusSelectedMarker(true);
+    }
+
+    function resetFilters() {
+      el('f_vesselName').value = '';
+      el('f_type').value = '';
+      renderAll(true, false, false);
+    }
+
+    function fitAllPins() {
+      const mappable = state.filtered.filter(hasCoordinates);
+      if (!mappable.length) return;
+      map.fitBounds(mappable.map(r => [r.lat, r.lon]), { padding:[24,24] });
+    }
+
+    function renderPreviewStrip() {
+      const strip = el('photoPreviewStrip');
+      const empty = el('photoPreviewEmpty');
+      strip.innerHTML = state.pendingPhotos.map((item, index) => `
+        <div class="preview-thumb" title="Photo ${index + 1}"><img src="${item.src}" alt="Preview photo ${index + 1}" /></div>
+      `).join('');
+      empty.style.display = state.pendingPhotos.length ? 'none' : 'block';
+    }
+
+    function openModal(mode, record = null) {
+      state.modalMode = mode;
+      state.editingId = record?.id || null;
+      state.pendingPhotos = record ? (record.photoMeta || []).map((photo, index) => ({ id: photo.id || `existing-${index}`, src: photo.url, existingPath: photo.path, existingId: photo.id || null })) : [];
+      el('vesselModalTitle').textContent = mode === 'edit' ? 'Edit Vessel' : 'Insert New Vessel';
+      el('deleteVesselBtn').classList.toggle('hidden', mode !== 'edit');
+      el('deleteVesselBtn').textContent = 'Delete Vessel';
+      el('vesselForm').reset();
+      el('typeInput').value = record?.type || 'Wreck';
+      el('vesselNameInput').value = record?.vesselName || '';
+      el('latInput').value = hasCoordinates(record || {}) ? record.lat : '';
+      el('lonInput').value = hasCoordinates(record || {}) ? record.lon : '';
+      el('ownerInput').value = record?.owner || '';
+      el('notifiedHmInput').value = record?.notifiedToHm || '';
+      el('mtaIssuedInput').value = record?.mtaIssued || '';
+      el('mtaExpiryInput').value = record?.mtaExpiry || '';
+      el('policeInput').value = record?.policeNotification || '';
+      el('news1Input').value = record?.newspaper1 || '';
+      el('news2Input').value = record?.newspaper2 || '';
+      el('finalNoticeInput').value = record?.finalNotice || '';
+      renderPreviewStrip();
+      toggleAbandonedFields();
+      el('vesselModalBackdrop').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => el('vesselNameInput').focus(), 10);
+    }
+
+    function closeModal() {
+      el('vesselModalBackdrop').classList.add('hidden');
+      document.body.style.overflow = '';
+      state.pendingPhotos = [];
+      state.editingId = null;
+    }
+
+    function toggleAbandonedFields() {
+      const isAbandoned = el('typeInput').value === 'Abandoned';
+      document.querySelectorAll('.abandoned-only').forEach(node => node.classList.toggle('hidden', !isAbandoned));
+      if (!isAbandoned) {
+        el('policeInput').value = '';
+        el('news1Input').value = '';
+        el('news2Input').value = '';
+        el('finalNoticeInput').value = '';
+      }
+    }
+
+    function makeRandomId() {
+      if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+      return `id-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    }
+
+    function sanitizeFileName(name) {
+      return String(name || 'photo').replace(/[^a-zA-Z0-9._-]/g, '-');
+    }
+
+    function buildPendingPhotoItems(files) {
+      return Promise.all(Array.from(files || []).map(file => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ id: makeRandomId(), src: reader.result, file });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      })));
+    }
+
+    function buildDbPayload(type) {
+      const latRaw = el('latInput').value.trim();
+      const lonRaw = el('lonInput').value.trim();
+      return {
+        vessel_name: el('vesselNameInput').value.trim(),
+        type,
+        lat: latRaw === '' ? null : Number(latRaw),
+        lon: lonRaw === '' ? null : Number(lonRaw),
+        owner: el('ownerInput').value.trim() || null,
+        notified_to_hm: el('notifiedHmInput').value || null,
+        mta_issued: el('mtaIssuedInput').value || null,
+        mta_expiry: el('mtaExpiryInput').value || null,
+        police_notification: type === 'Abandoned' ? (el('policeInput').value || null) : null,
+        newspaper1: type === 'Abandoned' ? (el('news1Input').value || null) : null,
+        newspaper2: type === 'Abandoned' ? (el('news2Input').value || null) : null,
+        final_notice: type === 'Abandoned' ? (el('finalNoticeInput').value || null) : null
+      };
+    }
+
+    function mapDbRowToRecord(row, notes = [], photoMeta = []) {
+      const signedPhotos = photoMeta.filter(photo => photo.url).sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+      return withDerivedFields({
+        id: row.id,
+        vesselName: row.vessel_name,
+        type: row.type,
+        lat: row.lat,
+        lon: row.lon,
+        owner: row.owner,
+        notifiedToHm: row.notified_to_hm,
+        mtaIssued: row.mta_issued,
+        mtaExpiry: row.mta_expiry,
+        policeNotification: row.police_notification,
+        newspaper1: row.newspaper1,
+        newspaper2: row.newspaper2,
+        finalNotice: row.final_notice,
+        deletedAt: row.deleted_at,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        notes,
+        photoMeta: signedPhotos,
+        photos: signedPhotos.map(photo => photo.url)
+      });
+    }
+
+    async function createSignedUrlMap(paths) {
+      const uniquePaths = [...new Set((paths || []).filter(Boolean))];
+      const entries = await Promise.all(uniquePaths.map(async (path) => {
+        const { data, error } = await supabaseClient.storage.from(SUPABASE_BUCKET).createSignedUrl(path, 60 * 60 * 6);
+        if (error) {
+          console.error('Signed URL error:', path, error);
+          return [path, null];
+        }
+        return [path, data?.signedUrl || null];
+      }));
+      return Object.fromEntries(entries);
+    }
+
+    async function loadDataFromSupabase() {
+      if (!isSupabaseActive()) {
+        state.records = [];
+        state.selectedId = null;
+        return;
+      }
+      const [{ data: vesselRows, error: vesselError }, { data: noteRows, error: noteError }, { data: photoRows, error: photoError }] = await Promise.all([
+        supabaseClient.from('vessels').select('*').order('created_at', { ascending: false }),
+        supabaseClient.from('vessel_notes').select('*').order('created_at', { ascending: false }),
+        supabaseClient.from('vessel_photos').select('*').order('created_at', { ascending: true })
+      ]);
+      if (vesselError) throw vesselError;
+      if (noteError) throw noteError;
+      if (photoError) throw photoError;
+      const signedUrlMap = await createSignedUrlMap((photoRows || []).map(row => row.storage_path));
+      const notesByVessel = {};
+      const photosByVessel = {};
+      (noteRows || []).forEach(row => {
+        if (!notesByVessel[row.vessel_id]) notesByVessel[row.vessel_id] = [];
+        notesByVessel[row.vessel_id].push({ id: row.id, text: row.note_text, createdAt: row.created_at, createdBy: row.created_by });
+      });
+      (photoRows || []).forEach(row => {
+        if (!photosByVessel[row.vessel_id]) photosByVessel[row.vessel_id] = [];
+        photosByVessel[row.vessel_id].push({ id: row.id, path: row.storage_path, url: signedUrlMap[row.storage_path], originalFilename: row.original_filename, mimeType: row.mime_type, fileSize: row.file_size, createdAt: row.created_at });
+      });
+      state.records = (vesselRows || []).map(row => mapDbRowToRecord(row, notesByVessel[row.id] || [], photosByVessel[row.id] || []));
+      state.selectedId = state.records.find(r => r.id === state.selectedId)?.id || state.records[0]?.id || null;
+    }
+
+    function resetToSampleData() {
+      if (state.supabaseConfigured) {
+        alert('Reset to Sample Data is disabled in Supabase mode to avoid overwriting shared records. Use this button only in local preview mode.');
+        return;
+      }
+      state.records = SAMPLE_DATA.map(withDerivedFields);
+      state.selectedId = state.records[0]?.id || null;
+      localPersistRecords();
+      renderAll(true, true, false);
+    }
+
+    async function initializeData() {
+      try {
+        if (state.supabaseConfigured) {
+          await loadDataFromSupabase();
+        } else {
+          const stored = loadDataFromLocalStorage();
+          if (stored && stored.length) state.records = stored;
+          else {
+            state.records = SAMPLE_DATA.map(withDerivedFields);
+            localPersistRecords();
+          }
+          state.selectedId = state.records[0]?.id || null;
+        }
+        renderAll(true, true, false);
+      } catch (error) {
+        console.error(error);
+        alert(`Failed to load data: ${error.message || error}`);
+      }
+    }
+
+    async function uploadPendingPhotos(vesselId, pendingItems) {
+      const rows = [];
+      for (const item of pendingItems) {
+        if (!item.file) continue;
+        const safeName = sanitizeFileName(item.file.name || 'photo.jpg');
+        const path = `vessels/${vesselId}/${Date.now()}-${makeRandomId()}-${safeName}`;
+        const { error } = await supabaseClient.storage.from(SUPABASE_BUCKET).upload(path, item.file, { cacheControl: '3600', upsert: false, contentType: item.file.type || undefined });
+        if (error) throw error;
+        rows.push({ vessel_id: vesselId, storage_path: path, original_filename: item.file.name || safeName, mime_type: item.file.type || null, file_size: item.file.size || null, created_by: null });
+      }
+      if (rows.length) {
+        const { error } = await supabaseClient.from('vessel_photos').insert(rows);
+        if (error) throw error;
+      }
+    }
+
+    async function saveVessel(event) {
+      event.preventDefault();
+      const type = el('typeInput').value;
+      const payload = buildDbPayload(type);
+      const latRaw = el('latInput').value.trim();
+      const lonRaw = el('lonInput').value.trim();
+      if (!payload.vessel_name) return;
+      if ((latRaw !== '' && Number.isNaN(payload.lat)) || (lonRaw !== '' && Number.isNaN(payload.lon))) return;
+      if (isSupabaseActive()) {
+        try {
+          let savedRow = null;
+          if (state.modalMode === 'edit') {
+            payload.updated_by = null;
+            const { data, error } = await supabaseClient.from('vessels').update(payload).eq('id', state.editingId).select('*').single();
+            if (error) throw error;
+            savedRow = data;
+          } else {
+            payload.created_by = null;
+            payload.updated_by = null;
+            const { data, error } = await supabaseClient.from('vessels').insert(payload).select('*').single();
+            if (error) throw error;
+            savedRow = data;
+          }
+          const newPhotoItems = state.pendingPhotos.filter(item => item.file);
+          if (newPhotoItems.length) await uploadPendingPhotos(savedRow.id, newPhotoItems);
+          state.selectedId = savedRow.id;
+          state.detailPhotoIndex = 0;
+          closeModal();
+          await loadDataFromSupabase();
+          renderAll(true, true, true);
+          return;
+        } catch (error) {
+          console.error(error);
+          alert(`Save failed: ${error.message || error}`);
+          return;
+        }
+      }
+      const existing = state.modalMode === 'edit' ? (state.records.find(r => r.id === state.editingId) || {}) : {};
+      const photos = state.pendingPhotos.length ? state.pendingPhotos.map(item => item.src).filter(Boolean) : normalizePhotos(existing);
+      const record = withDerivedFields({ id: state.modalMode === 'edit' ? state.editingId : makeRandomId(), vesselName: payload.vessel_name, type, lat: payload.lat, lon: payload.lon, owner: payload.owner, notifiedToHm: payload.notified_to_hm, mtaIssued: payload.mta_issued, mtaExpiry: payload.mta_expiry, policeNotification: payload.police_notification, newspaper1: payload.newspaper1, newspaper2: payload.newspaper2, finalNotice: payload.final_notice, photos: photos.length ? photos : [svgPlaceholder(payload.vessel_name || 'Vessel', type === 'Wreck' ? '#92400e' : '#1d4ed8')], notes: Array.isArray(existing.notes) ? existing.notes : [], deletedAt: existing.deletedAt || null });
+      if (state.modalMode === 'edit') {
+        const idx = state.records.findIndex(r => r.id === state.editingId);
+        if (idx !== -1) state.records[idx] = record;
+        state.selectedId = record.id;
+      } else {
+        state.records.unshift(record);
+        state.selectedId = record.id;
+      }
+      state.detailPhotoIndex = 0;
+      localPersistRecords();
+      closeModal();
+      renderAll(true, true, true);
+    }
+
+    async function addNoteToSelectedRecord() {
+      const rec = selectedRecord();
+      const input = el('noteInput');
+      if (!rec || !input) return;
+      const text = input.value.trim();
+      if (!text) {
+        input.focus();
+        return;
+      }
+      if (isSupabaseActive()) {
+        try {
+          const { error } = await supabaseClient.from('vessel_notes').insert({ vessel_id: rec.id, note_text: text, created_by: null });
+          if (error) throw error;
+          await loadDataFromSupabase();
+          renderAll(true, false, false);
+          return;
+        } catch (error) {
+          console.error(error);
+          alert(`Failed to add note: ${error.message || error}`);
+          return;
+        }
+      }
+      const idx = state.records.findIndex(item => item.id === rec.id);
+      if (idx === -1) return;
+      const notes = Array.isArray(state.records[idx].notes) ? [...state.records[idx].notes] : [];
+      notes.unshift({ text, createdAt: new Date().toISOString() });
+      state.records[idx] = withDerivedFields({ ...state.records[idx], notes });
+      localPersistRecords();
+      renderAll(true, false, false);
+    }
+
+    async function softDeleteCurrentVessel() {
+      if (state.modalMode !== 'edit' || !state.editingId) return;
+      const now = new Date().toISOString();
+      const noteText = `Delete Timestamp: ${formatDateTime(now)} — Vessel marked Completed. Coordinates cleared from map.`;
+      if (isSupabaseActive()) {
+        try {
+          const { error: vesselError } = await supabaseClient.from('vessels').update({ lat: null, lon: null, deleted_at: now, updated_by: null }).eq('id', state.editingId);
+          if (vesselError) throw vesselError;
+          const { error: noteError } = await supabaseClient.from('vessel_notes').insert({ vessel_id: state.editingId, note_text: noteText, created_by: null });
+          if (noteError) throw noteError;
+          state.selectedId = state.editingId;
+          closeModal();
+          await loadDataFromSupabase();
+          renderAll(true, false, false);
+          return;
+        } catch (error) {
+          console.error(error);
+          alert(`Delete failed: ${error.message || error}`);
+          return;
+        }
+      }
+      const idx = state.records.findIndex(r => r.id === state.editingId);
+      if (idx === -1) return;
+      const existing = state.records[idx];
+      const notes = Array.isArray(existing.notes) ? [...existing.notes] : [];
+      notes.unshift({ text: noteText, createdAt: now });
+      state.records[idx] = withDerivedFields({ ...existing, lat: null, lon: null, deletedAt: now, notes });
+      state.selectedId = existing.id;
+      localPersistRecords();
+      closeModal();
+      renderAll(true, false, false);
+    }
+
+    function openLightbox(recordId, photoIndex = 0) {
+      const record = state.records.find(r => r.id === recordId);
+      if (!record) return;
+      const photos = normalizePhotos(record);
+      if (!photos.length) return;
+      state.lightbox.recordId = recordId;
+      state.lightbox.photos = photos;
+      state.lightbox.index = Math.max(0, Math.min(photoIndex, photos.length - 1));
+      state.lightbox.zoom = 1;
+      state.lightbox.panX = 0;
+      state.lightbox.panY = 0;
+      el('lightboxBackdrop').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      updateLightbox();
+    }
+
+    function closeLightbox() {
+      el('lightboxBackdrop').classList.add('hidden');
+      if (el('vesselModalBackdrop').classList.contains('hidden')) document.body.style.overflow = '';
+      state.lightbox.dragging = false;
+    }
+
+    function updateLightbox() {
+      const lb = state.lightbox;
+      const record = state.records.find(r => r.id === lb.recordId);
+      if (!record || !lb.photos.length) return;
+      el('lightboxImage').src = lb.photos[lb.index];
+      el('lightboxTitle').textContent = `${record.vesselName} — Photo ${lb.index + 1}`;
+      el('lightboxMeta').textContent = `Photo ${lb.index + 1} / ${lb.photos.length} • Zoom ${Math.round(lb.zoom * 100)}%`;
+      applyLightboxTransform();
+      el('prevPhotoBtn').disabled = lb.photos.length <= 1;
+      el('nextPhotoBtn').disabled = lb.photos.length <= 1;
+    }
+
+    function applyLightboxTransform() {
+      const img = el('lightboxImage');
+      img.style.transform = `translate(${state.lightbox.panX}px, ${state.lightbox.panY}px) scale(${state.lightbox.zoom})`;
+    }
+
+    function changeLightboxZoom(delta) {
+      state.lightbox.zoom = Math.max(0.5, Math.min(5, Number((state.lightbox.zoom + delta).toFixed(2))));
+      applyLightboxTransform();
+      updateLightbox();
+    }
+
+    function resetLightboxZoom() {
+      state.lightbox.zoom = 1;
+      state.lightbox.panX = 0;
+      state.lightbox.panY = 0;
+      applyLightboxTransform();
+      updateLightbox();
+    }
+
+    function moveLightboxPhoto(step) {
+      const lb = state.lightbox;
+      if (!lb.photos.length) return;
+      lb.index = (lb.index + step + lb.photos.length) % lb.photos.length;
+      resetLightboxZoom();
+      updateLightbox();
+    }
+
+    function initLightboxDrag() {
+      const stage = el('lightboxStage');
+      const img = el('lightboxImage');
+      img.addEventListener('mousedown', (event) => {
+        if (state.lightbox.zoom <= 1) return;
+        state.lightbox.dragging = true;
+        state.lightbox.dragStartX = event.clientX;
+        state.lightbox.dragStartY = event.clientY;
+        state.lightbox.startPanX = state.lightbox.panX;
+        state.lightbox.startPanY = state.lightbox.panY;
+        img.style.cursor = 'grabbing';
+      });
+      window.addEventListener('mousemove', (event) => {
+        if (!state.lightbox.dragging) return;
+        state.lightbox.panX = state.lightbox.startPanX + (event.clientX - state.lightbox.dragStartX);
+        state.lightbox.panY = state.lightbox.startPanY + (event.clientY - state.lightbox.dragStartY);
+        applyLightboxTransform();
+      });
+      window.addEventListener('mouseup', () => {
+        state.lightbox.dragging = false;
+        img.style.cursor = 'grab';
+      });
+      stage.addEventListener('wheel', (event) => {
+        if (el('lightboxBackdrop').classList.contains('hidden')) return;
+        event.preventDefault();
+        changeLightboxZoom(event.deltaY < 0 ? 0.15 : -0.15);
+      }, { passive: false });
+    }
+
+    function initEvents() {
+      el('f_vesselName').addEventListener('input', () => renderAll(true, false, true));
+      el('f_type').addEventListener('change', () => renderAll(true, false, false));
+      el('reloadBtn').addEventListener('click', resetToSampleData);
+      el('resetFiltersBtn').addEventListener('click', resetFilters);
+      el('fitAllBtn').addEventListener('click', fitAllPins);
+      el('insertVesselBtn').addEventListener('click', () => openModal('insert'));
+      el('sharepointBtn').addEventListener('click', () => {
+        if (SHAREPOINT_URL && SHAREPOINT_URL !== 'https://YOUR-SHAREPOINT-SITE-URL-HERE') {
+          window.open(SHAREPOINT_URL, '_blank', 'noopener,noreferrer');
+        } else {
+          alert('Please set the SHAREPOINT_URL in the HTML file.');
+        }
+      });
+      el('editVesselBtn').addEventListener('click', () => { const rec = selectedRecord(); if (rec) openModal('edit', rec); });
+      el('vesselModalClose').addEventListener('click', closeModal);
+      el('cancelVesselBtn').addEventListener('click', closeModal);
+      el('deleteVesselBtn').addEventListener('click', softDeleteCurrentVessel);
+      el('typeInput').addEventListener('change', toggleAbandonedFields);
+      el('vesselForm').addEventListener('submit', saveVessel);
+      el('photoFileInput').addEventListener('change', async (event) => {
+        const files = event.target.files;
+        if (!files || !files.length) return;
+        try {
+          const newItems = await buildPendingPhotoItems(files);
+          state.pendingPhotos = [...state.pendingPhotos, ...newItems.filter(Boolean)];
+          renderPreviewStrip();
+          event.target.value = '';
+        } catch (error) {
+          console.error(error);
+          alert(`Photo preview failed: ${error.message || error}`);
+        }
+      });
+      el('vesselModalBackdrop').addEventListener('click', (event) => { if (event.target === el('vesselModalBackdrop')) closeModal(); });
+      el('lightboxBackdrop').addEventListener('click', (event) => { if (event.target === el('lightboxBackdrop')) closeLightbox(); });
+      el('lightboxCloseBtn').addEventListener('click', closeLightbox);
+      el('zoomInBtn').addEventListener('click', () => changeLightboxZoom(0.2));
+      el('zoomOutBtn').addEventListener('click', () => changeLightboxZoom(-0.2));
+      el('resetZoomBtn').addEventListener('click', resetLightboxZoom);
+      el('prevPhotoBtn').addEventListener('click', () => moveLightboxPhoto(-1));
+      el('nextPhotoBtn').addEventListener('click', () => moveLightboxPhoto(1));
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !el('lightboxBackdrop').classList.contains('hidden')) { closeLightbox(); return; }
+        if (event.key === 'Escape' && !el('vesselModalBackdrop').classList.contains('hidden')) { closeModal(); return; }
+        if (!el('lightboxBackdrop').classList.contains('hidden')) {
+          if (event.key === 'ArrowRight') moveLightboxPhoto(1);
+          if (event.key === 'ArrowLeft') moveLightboxPhoto(-1);
+          if (event.key === '+' || event.key === '=') changeLightboxZoom(0.2);
+          if (event.key === '-' || event.key === '_') changeLightboxZoom(-0.2);
+        }
+      });
+      window.addEventListener('resize', () => map.invalidateSize());
+      initLightboxDrag();
+    }
+
+    (async function bootstrap() {
+      initEvents();
+      await initializeSupabase();
+      await initializeData();
+    })();
+  </script>
+</body>
+</html>
