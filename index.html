@@ -77,6 +77,19 @@
     .legend-dot{width:12px;height:12px;border-radius:999px;display:inline-block}
 
     .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:#fff;margin-top:16px}
+
+    .split-table-host{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+    .split-table-wrap{overflow-x:auto;overflow-y:auto;max-width:100%;scrollbar-gutter:stable;background:#fff}
+    .split-table-title{position:sticky;left:0;padding:14px 14px 10px 14px;margin:0;font-size:18px;font-weight:800;border-bottom:1px solid var(--line);background:#fff;z-index:2}
+    .split-vessel-table{min-width:860px!important;width:max-content;table-layout:auto}
+    .split-vessel-table th,.split-vessel-table td{white-space:nowrap;overflow:visible;text-overflow:clip}
+    .split-vessel-table th:nth-child(1),.split-vessel-table td:nth-child(1){min-width:180px}
+    .split-vessel-table th:nth-child(2),.split-vessel-table td:nth-child(2){min-width:140px}
+    .split-vessel-table th:nth-child(3),.split-vessel-table td:nth-child(3){min-width:420px;max-width:none}
+    .split-vessel-table th:nth-child(4),.split-vessel-table td:nth-child(4){min-width:120px;text-align:center}
+    .split-vessel-table .status-pill{white-space:nowrap}
+    .split-vessel-table .table-action-btn{white-space:nowrap;min-width:78px}
+    @media (max-width:1200px){.split-table-host{grid-template-columns:1fr}.split-vessel-table{min-width:860px!important}}
     .desktop-table-host,.mobile-table-host{min-width:0}
     .mobile-list-card{display:none}
     .mobile-list-card .panel-body{padding-top:16px}
@@ -272,23 +285,35 @@
               <div class="legend-item"><span class="legend-dot" style="background:#64748b"></span><span>Completed (list only)</span></div>
             </div>
             <div id="desktopTableHost" class="desktop-table-host">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Vessel Name</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Owner</th>
-                    <th>Lat</th>
-                    <th>Long</th>
-                    <th>Notified to HM</th>
-                    <th>MTA Notice expiry</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-              </table>
+            <div class="split-table-host">
+              <div class="table-wrap split-table-wrap">
+                <h3 class="split-table-title">Wreck</h3>
+                <table class="split-vessel-table">
+                  <thead>
+                    <tr>
+                      <th>Vessel Name</th>
+                      <th>Status</th>
+                      <th>Owner</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tableBodyWreck"></tbody>
+                </table>
+              </div>
+              <div class="table-wrap split-table-wrap">
+                <h3 class="split-table-title">Abandoned</h3>
+                <table class="split-vessel-table">
+                  <thead>
+                    <tr>
+                      <th>Vessel Name</th>
+                      <th>Status</th>
+                      <th>Owner</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tableBodyAbandoned"></tbody>
+                </table>
+              </div>
             </div>
           </div>
           </div>
@@ -630,13 +655,30 @@
       return { vesselName: el('f_vesselName').value.trim().toLowerCase(), type: el('f_type').value };
     }
 
+    function typeSortRank(type) {
+      const order = { Wreck: 0, Abandoned: 1 };
+      return Object.prototype.hasOwnProperty.call(order, type) ? order[type] : 99;
+    }
+    function statusSortRank(status) {
+      const order = { 'Ready to dispose': 0, WIP: 1, Completed: 2 };
+      return Object.prototype.hasOwnProperty.call(order, status) ? order[status] : 99;
+    }
+    function sortVesselRecords(records) {
+      return [...records].sort((a, b) => {
+        const typeDiff = typeSortRank(a.type) - typeSortRank(b.type);
+        if (typeDiff !== 0) return typeDiff;
+        const statusDiff = statusSortRank(deriveStatus(a)) - statusSortRank(deriveStatus(b));
+        if (statusDiff !== 0) return statusDiff;
+        return String(a.vesselName || '').localeCompare(String(b.vesselName || ''), 'en', { sensitivity: 'base', numeric: true });
+      });
+    }
     function applyFilters() {
       const f = currentFilters();
-      state.filtered = state.records.filter(r => {
+      state.filtered = sortVesselRecords(state.records.filter(r => {
         if (f.vesselName && !r.vesselName.toLowerCase().includes(f.vesselName)) return false;
         if (f.type && r.type !== f.type) return false;
         return true;
-      });
+      }));
       if (!state.filtered.some(r => r.id === state.selectedId)) state.selectedId = state.filtered[0]?.id || null;
     }
 
@@ -696,59 +738,70 @@
     }
 
     function renderTable() {
-      const tbody = el('tableBody');
+      const wreckBody = el('tableBodyWreck');
+      const abandonedBody = el('tableBodyAbandoned');
       const mobileHost = el('mobileTableHost');
-      if (!state.filtered.length) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#64748b;padding:40px 16px;">No vessels match the current filter.</td></tr>`;
-        if (mobileHost) mobileHost.innerHTML = `<div class="mobile-list-empty">No vessels match the current filter.</div>`;
-        return;
-      }
-      tbody.innerHTML = state.filtered.map(r => {
-        const active = state.selectedId === r.id ? 'active' : '';
-        const completedClass = deriveStatus(r) === 'Completed' ? 'completed-row' : '';
-        const expiryHtml = isExpired(r.mtaExpiry) ? `<span class="alert-text">${escapeHtml(formatDate(r.mtaExpiry))}</span>` : escapeHtml(formatDate(r.mtaExpiry));
-        const typeClass = r.type === 'Wreck' ? 'wreck' : 'abandoned';
-        const status = deriveStatus(r);
-        const statusPill = status !== '-' ? `<span class="status-pill ${statusClass(status)}">${escapeHtml(status)}</span>` : '-';
-        const actionsHtml = status === 'Completed' ? `<button type="button" class="small danger table-action-btn" data-remove-id="${escapeHtml(r.id)}">Remove</button>` : '-';
-        return `
-          <tr class="${active} ${completedClass}" data-id="${escapeHtml(r.id)}">
-            <td><strong>${escapeHtml(r.vesselName)}</strong></td>
-            <td><span class="row-type ${typeClass}">${escapeHtml(r.type)}</span></td>
-            <td>${statusPill}</td>
-            <td>${escapeHtml(r.owner || '-')}</td>
-            <td>${hasCoordinates(r) ? Number(r.lat).toFixed(6) : '-'}</td>
-            <td>${hasCoordinates(r) ? Number(r.lon).toFixed(6) : '-'}</td>
-            <td>${escapeHtml(formatDate(r.notifiedToHm))}</td>
-            <td>${expiryHtml}</td>
-            <td>${actionsHtml}</td>
-          </tr>`;
-      }).join('');
-      if (mobileHost) {
-        mobileHost.innerHTML = `<div class="mobile-list-grid">${state.filtered.map(r => {
+
+      const renderEmptyRow = (label) => `<tr><td colspan="4" style="text-align:center;color:#64748b;padding:28px 14px;">No ${label} vessels match the current filter.</td></tr>`;
+
+      const renderDesktopRows = (list, label) => {
+        if (!list.length) return renderEmptyRow(label);
+        return list.map(r => {
           const active = state.selectedId === r.id ? 'active' : '';
-          const typeClass = r.type === 'Wreck' ? 'wreck' : 'abandoned';
+          const completedClass = deriveStatus(r) === 'Completed' ? 'completed-row' : '';
           const status = deriveStatus(r);
-          const statusPill = status !== '-' ? `<span class="status-pill ${statusClass(status)}">${escapeHtml(status)}</span>` : '';
-          const typePill = `<span class="badge ${typeClass}">${escapeHtml(r.type)}</span>`;
-          const removeBtn = status === 'Completed' ? `<button type="button" class="small danger table-action-btn" data-mobile-remove-id="${escapeHtml(r.id)}">Remove</button>` : '';
-          const ownerText = escapeHtml(r.owner || '-');
-          const expiryText = isExpired(r.mtaExpiry) ? `<span class="alert-text">${escapeHtml(formatDate(r.mtaExpiry))}</span>` : escapeHtml(formatDate(r.mtaExpiry));
+          const statusPill = status !== '-' ? `<span class="status-pill ${statusClass(status)}">${escapeHtml(status)}</span>` : '-';
+          const actionsHtml = status === 'Completed' ? `<button type="button" class="small danger table-action-btn" data-remove-id="${escapeHtml(r.id)}">Remove</button>` : '-';
           return `
-            <div class="mobile-vessel-card ${active}" data-mobile-id="${escapeHtml(r.id)}">
-              <div class="mobile-vessel-head">
-                <div class="mobile-vessel-title">${escapeHtml(r.vesselName)}</div>
-                ${removeBtn ? `<div class="mobile-vessel-actions">${removeBtn}</div>` : ''}
-              </div>
-              <div class="mobile-vessel-meta">${typePill}${statusPill}</div>
-              <div class="mobile-vessel-row"><div class="mobile-vessel-key">Owner</div><div class="mobile-vessel-value">${ownerText}</div></div>
-              <div class="mobile-vessel-row"><div class="mobile-vessel-key">Notified to HM</div><div class="mobile-vessel-value">${escapeHtml(formatDate(r.notifiedToHm))}</div></div>
-              <div class="mobile-vessel-row"><div class="mobile-vessel-key">MTA expiry</div><div class="mobile-vessel-value">${expiryText}</div></div>
-            </div>`;
-        }).join('')}</div>`;
+            <tr class="${active} ${completedClass}" data-id="${escapeHtml(r.id)}" title="${escapeHtml(r.vesselName)}">
+              <td><strong>${escapeHtml(r.vesselName)}</strong></td>
+              <td>${statusPill}</td>
+              <td title="${escapeHtml(r.owner || '-')}">${escapeHtml(r.owner || '-')}</td>
+              <td>${actionsHtml}</td>
+            </tr>`;
+        }).join('');
+      };
+
+      const wreckList = state.filtered.filter(r => r.type === 'Wreck');
+      const abandonedList = state.filtered.filter(r => r.type === 'Abandoned');
+
+      if (wreckBody) wreckBody.innerHTML = renderDesktopRows(wreckList, 'Wreck');
+      if (abandonedBody) abandonedBody.innerHTML = renderDesktopRows(abandonedList, 'Abandoned');
+
+      if (mobileHost) {
+        if (!state.filtered.length) {
+          mobileHost.innerHTML = `<div class="mobile-list-empty">No vessels match the current filter.</div>`;
+        } else {
+          const renderMobileSection = (title, list) => {
+            const rows = list.length ? list.map(r => {
+              const active = state.selectedId === r.id ? 'active' : '';
+              const typeClass = r.type === 'Wreck' ? 'wreck' : 'abandoned';
+              const status = deriveStatus(r);
+              const statusPill = status !== '-' ? `<span class="status-pill ${statusClass(status)}">${escapeHtml(status)}</span>` : '';
+              const typePill = `<span class="badge ${typeClass}">${escapeHtml(r.type)}</span>`;
+              const removeBtn = status === 'Completed' ? `<button type="button" class="small danger table-action-btn" data-mobile-remove-id="${escapeHtml(r.id)}">Remove</button>` : '';
+              const ownerText = escapeHtml(r.owner || '-');
+              const expiryText = isExpired(r.mtaExpiry) ? `<span class="alert-text">${escapeHtml(formatDate(r.mtaExpiry))}</span>` : escapeHtml(formatDate(r.mtaExpiry));
+              return `
+                <div class="mobile-vessel-card ${active}" data-mobile-id="${escapeHtml(r.id)}">
+                  <div class="mobile-vessel-head">
+                    <div class="mobile-vessel-title">${escapeHtml(r.vesselName)}</div>
+                    ${removeBtn ? `<div class="mobile-vessel-actions">${removeBtn}</div>` : ''}
+                  </div>
+                  <div class="mobile-vessel-meta">${typePill}${statusPill}</div>
+                  <div class="mobile-vessel-row"><div class="mobile-vessel-key">Owner</div><div class="mobile-vessel-value">${ownerText}</div></div>
+                  <div class="mobile-vessel-row"><div class="mobile-vessel-key">Notified to HM</div><div class="mobile-vessel-value">${escapeHtml(formatDate(r.notifiedToHm))}</div></div>
+                  <div class="mobile-vessel-row"><div class="mobile-vessel-key">MTA expiry</div><div class="mobile-vessel-value">${expiryText}</div></div>
+                </div>`;
+            }).join('') : `<div class="mobile-list-empty">No ${title} vessels match the current filter.</div>`;
+            return `<h3 class="split-table-title">${title}</h3><div class="mobile-list-grid">${rows}</div>`;
+          };
+          mobileHost.innerHTML = renderMobileSection('Wreck', wreckList) + renderMobileSection('Abandoned', abandonedList);
+        }
       }
-      tbody.querySelectorAll('tr[data-id]').forEach(tr => tr.addEventListener('click', () => { state.selectedId = tr.dataset.id; renderAll(false, false, true); }));
-      tbody.querySelectorAll('[data-remove-id]').forEach(btn => {
+
+      document.querySelectorAll('tr[data-id]').forEach(tr => tr.addEventListener('click', () => { state.selectedId = tr.dataset.id; renderAll(false, false, true); }));
+      document.querySelectorAll('[data-remove-id]').forEach(btn => {
         btn.addEventListener('click', async (event) => {
           event.stopPropagation();
           await permanentlyDeleteVessel(btn.dataset.removeId);
@@ -764,7 +817,6 @@
         });
       }
     }
-
     function detailItem(label, value, sub = '', isAlert = false) {
       return `
         <div class="detail-item">
