@@ -130,18 +130,18 @@
     .detail-item{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff}
     .detail-key{font-size:12px;color:var(--muted)}
     .detail-val{margin-top:6px;font-size:14px;font-weight:700;color:var(--text);word-break:break-word}
-    .detail-sub{margin-top:6px;font-size:12px;color:var(--muted);word-break:break-word;white-space:pre-line}
+    .detail-sub{margin-top:6px;font-size:12px;color:var(--muted);word-break:break-word;white-space:pre-line}.gps-dmm{font-size:14px;font-weight:800;color:var(--text)}.gps-dd{margin-top:6px;font-size:12px;color:var(--muted);font-weight:500}
     .muted-box{border:1px solid var(--line);border-radius:16px;padding:14px;font-size:14px;color:var(--muted);background:#f8fafc}
     .hidden{display:none!important}
     .alert-text{color:var(--danger)!important;font-weight:900!important}
 
     .photo-wrap{grid-column:1 / -1}
     .photo-card{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
-    .photo-main{width:100%;height:320px;object-fit:cover;background:#e2e8f0;display:block;cursor:zoom-in}
+    .photo-main{width:100%;height:auto;max-height:none;object-fit:contain;background:#e2e8f0;display:block;cursor:zoom-in}
     .photo-caption{padding:10px 14px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
     .thumb-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;padding:12px 14px;border-top:1px solid var(--line);background:#fff}
     .thumb-item{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#f8fafc;cursor:pointer}
-    .thumb-item img{display:block;width:100%;height:72px;object-fit:cover}
+    .thumb-item img{display:block;width:100%;height:72px;object-fit:contain;background:#f1f5f9}
     .thumb-item.active{outline:2px solid #0ea5e9;outline-offset:1px}
 
     .notes-section{grid-column:1 / -1;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;margin-top:4px}
@@ -176,7 +176,7 @@
     .preview-box{border:1px dashed #cbd5e1;border-radius:16px;padding:12px;background:#f8fafc}
     .preview-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
     .preview-thumb{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
-    .preview-thumb img{display:block;width:100%;height:72px;object-fit:cover}
+    .preview-thumb img{display:block;width:100%;height:72px;object-fit:contain;background:#f1f5f9}
     .preview-thumb-remove{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:999px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.75);background:rgba(15,23,42,.82);color:#fff;font-size:15px;line-height:1;box-shadow:none}
     .preview-thumb-remove:hover{transform:none;background:#991b1b;border-color:#fecaca}
     .preview-thumb-badge{position:absolute;left:6px;bottom:6px;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.94);border:1px solid var(--line);font-size:10px;font-weight:700;color:var(--muted)}
@@ -188,7 +188,7 @@
     .lightbox-controls{display:flex;gap:8px;flex-wrap:wrap}
     .lightbox-controls button{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.16)}
     .lightbox-stage{position:relative;flex:1;overflow:hidden;background:#020617;display:flex;align-items:center;justify-content:center}
-    .lightbox-image{max-width:none;max-height:none;transform-origin:center center;cursor:grab;user-select:none;will-change:transform}
+    .lightbox-image{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;transform-origin:center center;cursor:grab;user-select:none;will-change:transform}
     .lightbox-foot{padding:10px 16px;border-top:1px solid rgba(255,255,255,.12);color:#cbd5e1;font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 
     @media (max-width:1200px){
@@ -216,7 +216,7 @@
       .detail-grid{gap:10px}
       .detail-item{padding:12px}
       .detail-val{font-size:15px}
-      .photo-main{height:min(72vw, 320px)}
+      .photo-main{height:auto;max-height:none}
       .thumb-strip{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
       table{min-width:980px}
       .notes-add-row{flex-direction:column}
@@ -232,7 +232,6 @@
         <div class="subtitle"></div>
       </div>
       <div class="actions">
-        <button class="primary" id="reloadBtn">Reset to Sample Data</button>
         <button id="resetFiltersBtn">Reset Filters</button>
         <button id="fitAllBtn">Zoom out to All Pins</button>
       </div>
@@ -914,8 +913,8 @@
       html += detailItem('Classification', escapeHtml(rec.type));
       html += detailItem('Status', escapeHtml(status));
       html += detailItem('Owner details', escapeHtml(rec.owner || '-'));
-      html += detailItem('Lat', hasCoordinates(rec) ? escapeHtml(Number(rec.lat).toFixed(6)) : '-', hasCoordinates(rec) ? formatDMM(Number(rec.lat), 'lat') : (rec.deletedAt ? 'Cleared after deletion / completion' : ''));
-      html += detailItem('Long', hasCoordinates(rec) ? escapeHtml(Number(rec.lon).toFixed(6)) : '-', hasCoordinates(rec) ? formatDMM(Number(rec.lon), 'lon') : (rec.deletedAt ? 'Cleared after deletion / completion' : ''));
+      html += detailItem('Lat', hasCoordinates(rec) ? `<div class="gps-dmm">${escapeHtml(formatDMM(Number(rec.lat), 'lat'))}</div><div class="gps-dd">${escapeHtml(Number(rec.lat).toFixed(6))}</div>` : '-', rec.deletedAt && !hasCoordinates(rec) ? 'Cleared after deletion / completion' : '');
+      html += detailItem('Long', hasCoordinates(rec) ? `<div class="gps-dmm">${escapeHtml(formatDMM(Number(rec.lon), 'lon'))}</div><div class="gps-dd">${escapeHtml(Number(rec.lon).toFixed(6))}</div>` : '-', rec.deletedAt && !hasCoordinates(rec) ? 'Cleared after deletion / completion' : '');
       html += detailItem('Notified to HM', escapeHtml(formatDate(rec.notifiedToHm)));
       html += detailItem('MTA Notice issued', escapeHtml(formatDate(rec.mtaIssued)));
       html += detailItem('MTA Notice expiry', expiryHtml, isExpired(rec.mtaExpiry) && !rec.deletedAt ? 'Expired based on today' : '', isExpired(rec.mtaExpiry) && !rec.deletedAt);
@@ -1513,7 +1512,6 @@
     function initEvents() {
       el('f_vesselName').addEventListener('input', () => renderAll(true, false, true));
       el('f_type').addEventListener('change', () => renderAll(true, false, false));
-      el('reloadBtn').addEventListener('click', resetToSampleData);
       el('resetFiltersBtn').addEventListener('click', resetFilters);
       el('fitAllBtn').addEventListener('click', fitAllPins);
       el('insertVesselBtn').addEventListener('click', () => openModal('insert'));
