@@ -83,24 +83,14 @@
     .split-table-title{position:sticky;left:0;padding:14px 14px 10px 14px;margin:0;font-size:18px;font-weight:800;border-bottom:1px solid var(--line);background:#fff;z-index:2}
     .split-vessel-table{min-width:0!important;width:100%;table-layout:fixed}
     .split-vessel-table th,.split-vessel-table td{white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
-    .split-vessel-table th:nth-child(1),.split-vessel-table td:nth-child(1){width:34%}
-    .split-vessel-table th:nth-child(2),.split-vessel-table td:nth-child(2){width:25%}
-    .split-vessel-table th:nth-child(3),.split-vessel-table td:nth-child(3){width:23%}
-    .split-vessel-table th:nth-child(4),.split-vessel-table td:nth-child(4){width:18%;text-align:center}
-    .split-vessel-table .status-pill{white-space:nowrap}
-    .split-vessel-table .table-action-btn{white-space:nowrap;min-width:0;padding:6px 8px}
     .split-vessel-table th:nth-child(1),.split-vessel-table td:nth-child(1){width:32%}
     .split-vessel-table th:nth-child(2),.split-vessel-table td:nth-child(2){width:31%;overflow:visible}
     .split-vessel-table th:nth-child(3),.split-vessel-table td:nth-child(3){width:22%;padding-left:18px}
-    .split-vessel-table th:nth-child(4),.split-vessel-table td:nth-child(4){width:15%}
-    .split-vessel-table .status-pill{display:inline-flex;max-width:100%;font-size:10px;padding:4px 7px}
-    .dmm-fieldset{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr) 34px;gap:8px;align-items:center}
-    .dmm-input-wrap{position:relative}
-    .dmm-input-wrap .field{padding-right:34px}
-    .dmm-unit{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
-    .hemisphere-box{height:46px;border:1px solid #cbd5e1;border-radius:14px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
-    .dmm-helper{font-size:11px;color:var(--muted);margin-top:6px}
+    .split-vessel-table th:nth-child(4),.split-vessel-table td:nth-child(4){width:15%;text-align:center}
+    .split-vessel-table .status-pill{display:inline-flex;max-width:100%;white-space:nowrap;font-size:10px;padding:4px 7px}
+    .split-vessel-table .table-action-btn{white-space:nowrap;min-width:0;padding:6px 8px}
     @media (max-width:1200px){.split-table-host{grid-template-columns:1fr}.split-vessel-table{min-width:0!important}}
+    .dmm-fieldset{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr) 34px;gap:8px;align-items:center}.dmm-input-wrap{position:relative}.dmm-input-wrap .field{padding-right:34px}.dmm-unit{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}.hemisphere-box{height:46px;border:1px solid #cbd5e1;border-radius:14px;background:#f8fafc;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}.dmm-helper{font-size:11px;color:var(--muted);margin-top:6px}
     .desktop-table-host,.mobile-table-host{min-width:0}
     .mobile-list-card{display:none}
     .mobile-list-card .panel-body{padding-top:16px}
@@ -387,24 +377,8 @@
                 <option value="Abandoned">Abandoned</option>
               </select>
             </div>
-            <div>
-              <label class="field-label">Lat (Degrees + Decimal Minutes)</label>
-              <div class="dmm-fieldset">
-                <div class="dmm-input-wrap"><input id="latDegreesInput" class="field" type="number" min="0" max="90" step="1" value="0" aria-label="Latitude degrees" /><span class="dmm-unit">°</span></div>
-                <div class="dmm-input-wrap"><input id="latMinutesInput" class="field" type="number" min="0" max="59.9999" step="0.0001" value="0" aria-label="Latitude decimal minutes" /><span class="dmm-unit">′</span></div>
-                <div class="hemisphere-box" aria-label="South">S</div>
-              </div>
-              <div class="dmm-helper">Enter positive degrees and decimal minutes. Hemisphere is fixed to S.</div>
-            </div>
-            <div>
-              <label class="field-label">Long (Degrees + Decimal Minutes)</label>
-              <div class="dmm-fieldset">
-                <div class="dmm-input-wrap"><input id="lonDegreesInput" class="field" type="number" min="0" max="180" step="1" value="0" aria-label="Longitude degrees" /><span class="dmm-unit">°</span></div>
-                <div class="dmm-input-wrap"><input id="lonMinutesInput" class="field" type="number" min="0" max="59.9999" step="0.0001" value="0" aria-label="Longitude decimal minutes" /><span class="dmm-unit">′</span></div>
-                <div class="hemisphere-box" aria-label="East">E</div>
-              </div>
-              <div class="dmm-helper">Enter positive degrees and decimal minutes. Hemisphere is fixed to E.</div>
-            </div>
+            <div><label class="field-label">Lat (Degrees + Decimal Minutes)</label><div class="dmm-fieldset"><div class="dmm-input-wrap"><input id="latDegreesInput" class="field" type="number" min="0" max="90" step="1" value="0"><span class="dmm-unit">°</span></div><div class="dmm-input-wrap"><input id="latMinutesInput" class="field" type="number" min="0" max="59.9999" step="0.0001" value="0"><span class="dmm-unit">′</span></div><div class="hemisphere-box">S</div></div><div class="dmm-helper">Enter positive degrees and decimal minutes. Hemisphere is fixed to S.</div></div>
+            <div><label class="field-label">Long (Degrees + Decimal Minutes)</label><div class="dmm-fieldset"><div class="dmm-input-wrap"><input id="lonDegreesInput" class="field" type="number" min="0" max="180" step="1" value="0"><span class="dmm-unit">°</span></div><div class="dmm-input-wrap"><input id="lonMinutesInput" class="field" type="number" min="0" max="59.9999" step="0.0001" value="0"><span class="dmm-unit">′</span></div><div class="hemisphere-box">E</div></div><div class="dmm-helper">Enter positive degrees and decimal minutes. Hemisphere is fixed to E.</div></div>
             <div class="full">
               <label class="field-label" for="ownerInput">Owner details</label>
               <textarea id="ownerInput" class="field" placeholder="Owner name / contact / remarks"></textarea>
@@ -693,17 +667,10 @@
       return [...records].sort((a, b) => {
         const typeDiff = typeSortRank(a.type) - typeSortRank(b.type);
         if (typeDiff !== 0) return typeDiff;
-        const statusA = deriveStatus(a);
-        const statusB = deriveStatus(b);
+        const statusA = deriveStatus(a); const statusB = deriveStatus(b);
         const statusDiff = statusSortRank(statusA) - statusSortRank(statusB);
         if (statusDiff !== 0) return statusDiff;
-        if (statusA === statusB) {
-          const dateAValue = statusA === 'Completed' ? a.deletedAt : a.mtaIssued;
-          const dateBValue = statusB === 'Completed' ? b.deletedAt : b.mtaIssued;
-          const dateA = dateAValue ? new Date(dateAValue).getTime() : 0;
-          const dateB = dateBValue ? new Date(dateBValue).getTime() : 0;
-          if (dateA !== dateB) return dateB - dateA;
-        }
+        if (statusA === statusB) { const av=statusA==='Completed'?a.deletedAt:a.mtaIssued; const bv=statusB==='Completed'?b.deletedAt:b.mtaIssued; const ad=av?new Date(av).getTime():0; const bd=bv?new Date(bv).getTime():0; if(ad!==bd)return bd-ad; }
         return String(a.vesselName || '').localeCompare(String(b.vesselName || ''), 'en', { sensitivity: 'base', numeric: true });
       });
     }
@@ -787,9 +754,7 @@
           const status = deriveStatus(r);
           const statusPill = status !== '-' ? `<span class="status-pill ${statusClass(status)}">${escapeHtml(status)}</span>` : '-';
           const actionsHtml = status === 'Completed' ? `<button type="button" class="small danger table-action-btn" data-remove-id="${escapeHtml(r.id)}">Remove</button>` : '-';
-          const relevantDate = status === 'Completed' ? r.deletedAt : r.mtaIssued;
-          const dateLabel = status === 'Completed' ? 'Completed date' : 'MTA Notice issued';
-          const dateHtml = relevantDate ? `<span title="${escapeHtml(dateLabel)}">${escapeHtml(formatDate(relevantDate))}</span>` : '-';
+          const relevantDate=status==='Completed'?r.deletedAt:r.mtaIssued; const dateHtml=relevantDate?escapeHtml(formatDate(relevantDate)):'-';
           return `
             <tr class="${active} ${completedClass}" data-id="${escapeHtml(r.id)}" title="${escapeHtml(r.vesselName)}">
               <td><strong>${escapeHtml(r.vesselName)}</strong></td>
@@ -819,9 +784,6 @@
               const typePill = `<span class="badge ${typeClass}">${escapeHtml(r.type)}</span>`;
               const removeBtn = status === 'Completed' ? `<button type="button" class="small danger table-action-btn" data-mobile-remove-id="${escapeHtml(r.id)}">Remove</button>` : '';
               const ownerText = escapeHtml(r.owner || '-');
-              const relevantDate = status === 'Completed' ? r.deletedAt : r.mtaIssued;
-              const relevantDateLabel = status === 'Completed' ? 'Completed date' : 'MTA Notice issued';
-              const relevantDateText = escapeHtml(formatDate(relevantDate));
               const expiryText = isExpired(r.mtaExpiry) ? `<span class="alert-text">${escapeHtml(formatDate(r.mtaExpiry))}</span>` : escapeHtml(formatDate(r.mtaExpiry));
               return `
                 <div class="mobile-vessel-card ${active}" data-mobile-id="${escapeHtml(r.id)}">
@@ -831,7 +793,6 @@
                   </div>
                   <div class="mobile-vessel-meta">${typePill}${statusPill}</div>
                   <div class="mobile-vessel-row"><div class="mobile-vessel-key">Owner</div><div class="mobile-vessel-value">${ownerText}</div></div>
-                  <div class="mobile-vessel-row"><div class="mobile-vessel-key">${relevantDateLabel}</div><div class="mobile-vessel-value">${relevantDateText}</div></div>
                   <div class="mobile-vessel-row"><div class="mobile-vessel-key">Notified to HM</div><div class="mobile-vessel-value">${escapeHtml(formatDate(r.notifiedToHm))}</div></div>
                   <div class="mobile-vessel-row"><div class="mobile-vessel-key">MTA expiry</div><div class="mobile-vessel-value">${expiryText}</div></div>
                 </div>`;
@@ -1063,71 +1024,19 @@
       renderPreviewStrip();
     }
 
-    function decimalToDmm(value) {
-      const number = Number(value);
-      if (!Number.isFinite(number)) return { degrees: 0, minutes: 0 };
-      const absolute = Math.abs(number);
-      const degrees = Math.floor(absolute);
-      return { degrees, minutes: Number(((absolute - degrees) * 60).toFixed(4)) };
-    }
-    function dmmToDecimal(degreesValue, minutesValue, hemisphere) {
-      const degrees = Number(degreesValue);
-      const minutes = Number(minutesValue);
-      if (!Number.isFinite(degrees) || !Number.isFinite(minutes) || degrees < 0 || minutes < 0 || minutes >= 60) return null;
-      const absolute = degrees + minutes / 60;
-      return hemisphere === 'S' || hemisphere === 'W' ? -absolute : absolute;
-    }
-    function setDmmInputs(record) {
-      const lat = decimalToDmm(record?.lat);
-      const lon = decimalToDmm(record?.lon);
-      el('latDegreesInput').value = lat.degrees;
-      el('latMinutesInput').value = lat.minutes;
-      el('lonDegreesInput').value = lon.degrees;
-      el('lonMinutesInput').value = lon.minutes;
-    }
-    function todayForDateInput() {
-      const now = new Date();
-      const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-      return local.toISOString().slice(0, 10);
-    }
-    function completionDateToIso(dateValue) {
-      if (!dateValue) return new Date().toISOString();
-      const localNoon = new Date(`${dateValue}T12:00:00`);
-      return Number.isNaN(localNoon.getTime()) ? new Date().toISOString() : localNoon.toISOString();
-    }
-    function dateInputValue(value) {
-      if (!value) return todayForDateInput();
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return String(value).slice(0, 10) || todayForDateInput();
-      const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-      return local.toISOString().slice(0, 10);
-    }
-    function prepareCompletion() {
-      if (state.modalMode !== 'edit' || !state.editingId) return;
-      const record = state.records.find(r => r.id === state.editingId);
-      if (record?.deletedAt) {
-        permanentlyDeleteVessel(state.editingId);
-        return;
-      }
-      state.completionRequested = true;
-      el('completionDateInput').value = el('completionDateInput').value || todayForDateInput();
-      el('completionDateSection').classList.remove('hidden');
-      el('deleteVesselBtn').classList.add('hidden');
-      el('completionDateInput').focus();
-      el('completionDateInput').showPicker?.();
-    }
+    function decimalToDmm(v){const n=Number(v);if(!Number.isFinite(n))return{degrees:0,minutes:0};const a=Math.abs(n),degrees=Math.floor(a);return{degrees,minutes:Number(((a-degrees)*60).toFixed(4))}}
+    function dmmToDecimal(d,m,h){d=Number(d);m=Number(m);if(!Number.isFinite(d)||!Number.isFinite(m)||d<0||m<0||m>=60)return null;const a=d+m/60;return h==='S'||h==='W'?-a:a}
+    function setDmmInputs(r){const a=decimalToDmm(r?.lat),b=decimalToDmm(r?.lon);el('latDegreesInput').value=a.degrees;el('latMinutesInput').value=a.minutes;el('lonDegreesInput').value=b.degrees;el('lonMinutesInput').value=b.minutes}
+    function todayForDateInput(){const n=new Date(),l=new Date(n.getTime()-n.getTimezoneOffset()*60000);return l.toISOString().slice(0,10)}
+    function completionDateToIso(v){const d=new Date(`${v}T12:00:00`);return Number.isNaN(d.getTime())?new Date().toISOString():d.toISOString()}
+    function dateInputValue(v){if(!v)return todayForDateInput();const d=new Date(v);if(Number.isNaN(d.getTime()))return String(v).slice(0,10)||todayForDateInput();const l=new Date(d.getTime()-d.getTimezoneOffset()*60000);return l.toISOString().slice(0,10)}
+    function prepareCompletion(){if(state.modalMode!=='edit'||!state.editingId)return;const r=state.records.find(x=>x.id===state.editingId);if(r?.deletedAt){permanentlyDeleteVessel(state.editingId);return}state.completionRequested=true;el('completionDateInput').value=el('completionDateInput').value||todayForDateInput();el('completionDateSection').classList.remove('hidden');el('deleteVesselBtn').classList.add('hidden');el('completionDateInput').focus();el('completionDateInput').showPicker?.()}
     function openModal(mode, record = null) {
       state.modalMode = mode;
       state.editingId = record?.id || null;
       state.pendingPhotos = record ? (Array.isArray(record.photoMeta) && record.photoMeta.length ? record.photoMeta.map((photo, index) => ({ id: photo.id || `existing-${index}`, src: photo.url, existingPath: photo.path, existingId: photo.id || null })) : normalizePhotos(record).map((src, index) => ({ id: `existing-${index}`, src, existingPath: null, existingId: null }))) : [];
       el('vesselModalTitle').textContent = mode === 'edit' ? 'Edit Vessel' : 'Insert New Vessel';
-      const isCompletedRecord = mode === 'edit' && !!record?.deletedAt;
-      state.completionRequested = isCompletedRecord;
-      el('deleteVesselBtn').classList.toggle('hidden', mode !== 'edit');
-      el('deleteVesselBtn').textContent = record?.deletedAt ? 'Remove from List' : 'Complete Process';
-      el('completionDateSection').classList.toggle('hidden', !isCompletedRecord);
-      el('vesselForm').reset();
-      el('completionDateInput').value = isCompletedRecord ? dateInputValue(record.deletedAt) : todayForDateInput();
+      const isCompletedRecord=mode==='edit'&&!!record?.deletedAt;state.completionRequested=isCompletedRecord;el('deleteVesselBtn').classList.toggle('hidden',mode!=='edit');el('deleteVesselBtn').textContent=record?.deletedAt?'Remove from List':'Complete Process';el('completionDateSection').classList.toggle('hidden',!isCompletedRecord);el('vesselForm').reset();el('completionDateInput').value=isCompletedRecord?dateInputValue(record.deletedAt):todayForDateInput();
       el('typeInput').value = record?.type || 'Wreck';
       el('vesselNameInput').value = record?.vesselName || '';
       setDmmInputs(hasCoordinates(record || {}) ? record : null);
@@ -1149,8 +1058,7 @@
     function closeModal() {
       el('vesselModalBackdrop').classList.add('hidden');
       document.body.style.overflow = '';
-      state.pendingPhotos = [];
-      state.completionRequested = false;
+      state.pendingPhotos = [];state.completionRequested=false;
       state.editingId = null;
     }
 
@@ -1184,13 +1092,11 @@
     }
 
     function buildDbPayload(type) {
-      const lat = dmmToDecimal(el('latDegreesInput').value, el('latMinutesInput').value, 'S');
-      const lon = dmmToDecimal(el('lonDegreesInput').value, el('lonMinutesInput').value, 'E');
+      const lat=dmmToDecimal(el('latDegreesInput').value,el('latMinutesInput').value,'S');const lon=dmmToDecimal(el('lonDegreesInput').value,el('lonMinutesInput').value,'E');
       return {
         vessel_name: el('vesselNameInput').value.trim(),
         type,
-        lat,
-        lon,
+        lat, lon,
         owner: el('ownerInput').value.trim() || null,
         notified_to_hm: el('notifiedHmInput').value || null,
         mta_issued: el('mtaIssuedInput').value || null,
@@ -1344,35 +1250,9 @@
     async function saveVessel(event) {
       event.preventDefault();
       const type = el('typeInput').value;
-      const payload = buildDbPayload(type);
-      const completingNow = state.modalMode === 'edit' && state.completionRequested;
-      const completionDate = completingNow ? el('completionDateInput').value : '';
-      if (completingNow && !completionDate) {
-        alert('Please select a Completion Date.');
-        el('completionDateInput').focus();
-        return;
-      }
-      const completionAt = completingNow ? completionDateToIso(completionDate) : null;
-      const wasAlreadyCompleted = state.modalMode === 'edit' && !!state.records.find(r => r.id === state.editingId)?.deletedAt;
-      const completionNote = completingNow
-        ? (wasAlreadyCompleted
-          ? `Completion Date updated to ${formatDate(completionDate)}.`
-          : `Completion Date: ${formatDate(completionDate)} — Vessel marked Completed. Coordinates cleared from map.`)
-        : '';
-      if (completingNow) {
-        payload.lat = null;
-        payload.lon = null;
-        payload.deleted_at = completionAt;
-      }
+      const payload=buildDbPayload(type);const completingNow=state.modalMode==='edit'&&state.completionRequested;const completionDate=completingNow?el('completionDateInput').value:'';if(completingNow&&!completionDate){alert('Please select a Completion Date.');return}const completionAt=completingNow?completionDateToIso(completionDate):null;const wasAlreadyCompleted=state.modalMode==='edit'&&!!state.records.find(r=>r.id===state.editingId)?.deletedAt;const completionNote=completingNow?(wasAlreadyCompleted?`Completion Date updated to ${formatDate(completionDate)}.`:`Completion Date: ${formatDate(completionDate)} — Vessel marked Completed. Coordinates cleared from map.`):'';if(completingNow){payload.lat=null;payload.lon=null;payload.deleted_at=completionAt}
       if (!payload.vessel_name) return;
-      if (payload.lat === null || payload.lon === null) {
-        alert('Please enter valid GPS degrees and decimal minutes. Minutes must be from 0 to less than 60.');
-        return;
-      }
-      if (Math.abs(payload.lat) > 90 || Math.abs(payload.lon) > 180) {
-        alert('Please enter valid GPS coordinates. Latitude must be 0–90° and longitude must be 0–180°.');
-        return;
-      }
+      if(!completingNow&&(payload.lat===null||payload.lon===null)){alert('Please enter valid GPS degrees and decimal minutes. Minutes must be from 0 to less than 60.');return}
       if (isSupabaseActive()) {
         try {
           const editingRecord = state.modalMode === 'edit' ? (state.records.find(r => r.id === state.editingId) || null) : null;
@@ -1392,11 +1272,7 @@
           const keptExistingIds = new Set(state.pendingPhotos.filter(item => item.existingId).map(item => item.existingId).filter(Boolean));
           if (state.modalMode === 'edit' && editingRecord) await deleteRemovedExistingPhotos(editingRecord, keptExistingIds);
           const newPhotoItems = state.pendingPhotos.filter(item => item.file);
-          if (newPhotoItems.length) await uploadPendingPhotos(savedRow.id, newPhotoItems);
-          if (completingNow) {
-            const { error: completionNoteError } = await supabaseClient.from('vessel_notes').insert({ vessel_id: savedRow.id, note_text: completionNote, created_by: null });
-            if (completionNoteError) throw completionNoteError;
-          }
+          if (newPhotoItems.length) await uploadPendingPhotos(savedRow.id, newPhotoItems);if(completingNow){const {error}=await supabaseClient.from('vessel_notes').insert({vessel_id:savedRow.id,note_text:completionNote,created_by:null});if(error)throw error}
           state.selectedId = savedRow.id;
           state.detailPhotoIndex = 0;
           closeModal();
@@ -1411,9 +1287,7 @@
       }
       const existing = state.modalMode === 'edit' ? (state.records.find(r => r.id === state.editingId) || {}) : {};
       const photos = state.pendingPhotos.length ? state.pendingPhotos.map(item => item.src).filter(Boolean) : normalizePhotos(existing);
-      const localNotes = Array.isArray(existing.notes) ? [...existing.notes] : [];
-      if (completingNow) localNotes.unshift({ text: completionNote, createdAt: completionAt });
-      const record = withDerivedFields({ id: state.modalMode === 'edit' ? state.editingId : makeRandomId(), vesselName: payload.vessel_name, type, lat: completingNow ? null : payload.lat, lon: completingNow ? null : payload.lon, owner: payload.owner, notifiedToHm: payload.notified_to_hm, mtaIssued: payload.mta_issued, mtaExpiry: payload.mta_expiry, policeNotification: payload.police_notification, newspaper1: payload.newspaper1, newspaper2: payload.newspaper2, finalNotice: payload.final_notice, photos: photos.length ? photos : [svgPlaceholder(payload.vessel_name || 'Vessel', type === 'Wreck' ? '#92400e' : '#1d4ed8')], notes: localNotes, deletedAt: completingNow ? completionAt : (existing.deletedAt || null) });
+      const record = withDerivedFields({ id: state.modalMode === 'edit' ? state.editingId : makeRandomId(), vesselName: payload.vessel_name, type, lat: payload.lat, lon: payload.lon, owner: payload.owner, notifiedToHm: payload.notified_to_hm, mtaIssued: payload.mta_issued, mtaExpiry: payload.mta_expiry, policeNotification: payload.police_notification, newspaper1: payload.newspaper1, newspaper2: payload.newspaper2, finalNotice: payload.final_notice, photos: photos.length ? photos : [svgPlaceholder(payload.vessel_name || 'Vessel', type === 'Wreck' ? '#92400e' : '#1d4ed8')], notes: completingNow?[{text:completionNote,createdAt:completionAt},...(Array.isArray(existing.notes)?existing.notes:[]) ]:(Array.isArray(existing.notes)?existing.notes:[]), deletedAt: completingNow?completionAt:(existing.deletedAt || null) });
       if (state.modalMode === 'edit') {
         const idx = state.records.findIndex(r => r.id === state.editingId);
         if (idx !== -1) state.records[idx] = record;
