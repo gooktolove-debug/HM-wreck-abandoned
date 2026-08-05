@@ -223,14 +223,63 @@
       .notes-add-row{flex-direction:column}
       .lightbox-card{height:min(92vh,820px)}
     }
-  </style>
+  
+    /* ===== HM NAV PAGE VISUAL SYSTEM ===== */
+    :root{
+      --bg:#06111f;--bg2:#091a2d;--card:#0d2238;--surface:#0d2238;--surface2:#102a43;
+      --text:#eaf5ff;--muted:#8fa8bd;--line:rgba(149,190,219,.16);
+      --primary:#0f6b8f;--primary-soft:rgba(41,211,194,.10);--accent:#29d3c2;--accent2:#3ea6ff;
+      --shadow:0 24px 60px rgba(0,7,16,.32);--radius:20px;
+      --danger:#ff827b;--danger-soft:rgba(239,68,68,.14);--wreck:#ffc078;--wreck-soft:rgba(255,174,83,.12);
+      --abandoned:#83c8ff;--abandoned-soft:rgba(62,166,255,.12);--ready:#78efaa;--ready-soft:rgba(53,230,138,.12);
+      --wip:#c4a7ff;--wip-soft:rgba(167,139,250,.14);--completed:#b8c9d6;--completed-soft:rgba(148,163,184,.14)
+    }
+    html{background:#06111f}
+    body{min-height:100vh;background:radial-gradient(circle at 78% -10%,rgba(31,132,183,.22),transparent 38rem),radial-gradient(circle at 0 40%,rgba(21,198,179,.08),transparent 34rem),#06111f;color:var(--text);font-family:Inter,"Segoe UI",Arial,sans-serif}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.20;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:34px 34px}
+    .container{position:relative;max-width:1800px;padding:24px 30px 40px}
+    .header{align-items:center;margin:0 0 20px;padding:18px 22px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(135deg,rgba(13,34,56,.95),rgba(8,25,43,.9));box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+    .brand-block{min-width:280px}.eyebrow{display:flex;align-items:center;gap:10px;color:#8fb4ca;font-size:11px;font-weight:850;letter-spacing:.16em}.brand-mark{display:grid;place-items:center;width:30px;height:30px;border:1px solid rgba(41,211,194,.5);border-radius:8px;color:#61f4e5;background:rgba(41,211,194,.09);letter-spacing:0}.brand-block h1{margin:7px 0 3px;font-size:clamp(27px,3vw,42px);font-weight:760;letter-spacing:-.045em}.brand-block h1 span{color:#6fe5dc}.brand-block p{margin:0;color:var(--muted);font-size:13px}
+    .actions{justify-content:flex-end}.actions button{min-height:38px;border-color:rgba(95,166,205,.20);border-radius:10px;background:#102d46;color:#c7dfec;font-size:12px;box-shadow:none}.actions button:hover{transform:translateY(-1px);border-color:rgba(41,211,194,.48);background:#143953;color:#76eee3}
+    button{border-color:rgba(95,166,205,.22);background:#102d46;color:#c7dfec;box-shadow:none}button:hover{border-color:rgba(41,211,194,.45);background:#143953;color:#79eee3}button.primary{background:linear-gradient(135deg,#178c88,#0d6a71);border-color:#29d3c2;color:#fff}button.danger{background:#5e2025;border-color:#a8444c;color:#ffd4d1}
+    .card{border:1px solid var(--line);background:linear-gradient(145deg,rgba(14,38,61,.97),rgba(8,25,43,.97));box-shadow:var(--shadow)}
+    .stats{gap:12px}.stat-card{position:relative;overflow:hidden;padding:18px}.stat-card:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2),transparent)}.stat-label,.stat-sub,.panel-desc,.detail-key,.detail-sub,.field-label,.helper-text,.dmm-helper,.photo-caption,.mobile-vessel-key,.note-item-meta{color:var(--muted)}.stat-value,.panel-title,.detail-top-title,.detail-val,.mobile-vessel-title,.modal-title{color:var(--text)}
+    .icon-box{border:1px solid rgba(62,166,255,.24);background:rgba(62,166,255,.10)!important}.stat-wreck .icon-box{color:#ffc078;border-color:rgba(255,174,83,.32);background:rgba(255,174,83,.12)!important}.stat-abandoned .icon-box{color:#83c8ff}.stat-wip .icon-box{color:#c4a7ff;border-color:rgba(167,139,250,.28);background:rgba(167,139,250,.12)!important}.stat-ready .icon-box{color:#78efaa;border-color:rgba(53,230,138,.28);background:rgba(53,230,138,.12)!important}.stat-completed .icon-box{color:#b8c9d6;background:rgba(148,163,184,.12)!important}
+    .field,select.field,textarea.field,input[type="date"].field,input[type="number"].field,input[type="file"].field{border-color:rgba(149,190,219,.24);background:#0b2136;color:#eaf5ff}.field::placeholder{color:#7895a8}.field:focus{outline:3px solid rgba(41,211,194,.12);border-color:#29d3c2;box-shadow:none}.hemisphere-box{border-color:rgba(149,190,219,.24);background:#102d46;color:#eaf5ff}
+    #map{border-color:var(--line);background:#0b1e31}.leaflet-control-zoom a{background:#102d46!important;color:#eaf5ff!important;border-color:rgba(149,190,219,.22)!important}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#102d46;color:#eaf5ff}
+    .legend-item,.detail-item,.detail-top,.muted-box,.photo-card,.notes-section,.note-item,.preview-box,.preview-thumb,.mobile-vessel-card,.mobile-list-empty{border-color:var(--line);background:rgba(11,33,54,.80);color:#d8eaf5}.legend-item{color:var(--muted)}
+    .table-wrap,.split-table-wrap{border-color:var(--line);background:#0b2136}.split-table-title,.notes-header,thead{border-color:var(--line);background:#0c2940;color:#d8eaf5}th,td{border-color:var(--line);color:#d8eaf5}tbody tr:hover,tbody tr.active{background:rgba(41,211,194,.10)}.split-table-wrap{background:#0b2136}.mobile-vessel-card.active{background:rgba(41,211,194,.10);outline-color:#29d3c2}
+    .detail-top{background:#0c2940}.badge,.status-pill{border-color:var(--line);background:#102d46;color:#c7dfec}.badge.wreck{background:var(--wreck-soft);border-color:rgba(255,174,83,.32);color:#ffc078}.badge.abandoned{background:var(--abandoned-soft);border-color:rgba(62,166,255,.28);color:#83c8ff}.badge.wip,.status-pill.wip{background:var(--wip-soft);border-color:rgba(167,139,250,.28);color:#c4a7ff}.badge.ready,.status-pill.ready{background:var(--ready-soft);border-color:rgba(53,230,138,.28);color:#78efaa}.badge.completed,.status-pill.completed{background:var(--completed-soft);border-color:rgba(148,163,184,.28);color:#cbd5e1}.badge.alert{background:rgba(239,68,68,.14);border-color:rgba(248,113,113,.3);color:#ff9b95}.row-type.wreck{color:#ffc078}.row-type.abandoned{color:#83c8ff}
+    .notes-header{background:#0c2940}.notes-add,.thumb-strip{border-color:var(--line);background:#0b2136}.notes-list{background:#081b2d}.photo-main,.thumb-item img,.preview-thumb img{background:#071524}.thumb-item{border-color:var(--line);background:#102d46}.thumb-item.active{outline-color:#29d3c2}
+    .modal-backdrop{background:rgba(2,10,18,.72);backdrop-filter:blur(6px)}.modal-card{border-color:rgba(149,190,219,.22);background:#0b2136;color:var(--text);box-shadow:0 28px 80px rgba(0,0,0,.48)}.modal-head{border-color:var(--line);background:#0d263d}.modal-body{background:#0b2136}.preview-box{background:#091d30}.lightbox-card{background:#071524}
+    .alert-text{color:#ff8e87!important}.photo-caption{border-color:var(--line)}
+    @media(max-width:1100px){.header{align-items:flex-start}.actions{justify-content:flex-start}.main-grid{grid-template-columns:minmax(0,1.35fr) minmax(330px,.8fr)}}
+    @media(max-width:760px){
+      .container{padding:8px}.header{padding:14px;border-radius:14px}.eyebrow{font-size:9px}.brand-mark{width:28px;height:28px}.brand-block h1{font-size:24px}.brand-block p{display:none}
+      .header .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;margin-top:14px}.header .actions button{width:100%;min-width:0;min-height:42px;padding:9px 7px;font-size:11px;white-space:normal;text-align:center}
+      .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.stat-card{padding:13px}.stat-value{font-size:27px}.stat-label{font-size:11px}.stat-sub{font-size:10px}.main-grid{gap:10px}.panel-head{padding:14px 13px 0}.panel-body{padding:12px 13px 14px}#map{height:410px;min-height:410px}.detail-grid{grid-template-columns:1fr}.legend{grid-template-columns:repeat(2,minmax(0,1fr))}.legend-item{justify-content:center;padding:8px 6px}.modal-card{height:100vh;max-height:100vh;border-radius:0;border:0}.modal-head{position:sticky;top:0;z-index:10}
+    }
+    @media(max-width:420px){.stats{grid-template-columns:1fr 1fr}.stat-top{align-items:flex-start}.icon-box{width:36px;height:36px;border-radius:11px}.header .actions{grid-template-columns:1fr 1fr}}
+
+
+    /* Completed card period metrics */
+    .completed-stat-layout{display:grid;grid-template-columns:42px minmax(105px,1fr) minmax(122px,.9fr);align-items:center;gap:12px;width:100%}
+    .completed-total{min-width:0}.completed-periods{display:grid;gap:9px;align-self:stretch;padding-left:14px;border-left:1px solid rgba(149,190,219,.20)}
+    .completed-period-item{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+    .completed-period-item span{color:#9fb7c7;font-size:11px;font-weight:750;white-space:nowrap}
+    .completed-period-item strong{color:#f4fbff;font-size:20px;line-height:1;font-weight:900;font-variant-numeric:tabular-nums}
+    @media(max-width:1450px) and (min-width:761px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.stat-completed{grid-column:span 2}.completed-stat-layout{grid-template-columns:42px minmax(130px,1fr) minmax(160px,1fr)}}
+    @media(max-width:760px){.completed-stat-layout{grid-template-columns:36px minmax(88px,1fr);align-items:start}.completed-periods{grid-column:1 / -1;grid-template-columns:1fr 1fr;padding:10px 0 0;border-left:0;border-top:1px solid rgba(149,190,219,.20)}.completed-period-item strong{font-size:18px}.completed-period-item span{white-space:normal}}
+
+</style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div>
-        <h1>Wreck/Abandoned Summary Board</h1>
-        <div class="subtitle"></div>
+      <div class="brand-block">
+        <div class="eyebrow"><span class="brand-mark">HM</span><span>AUCKLAND HARBOURMASTER</span></div>
+        <h1>Wreck / Abandoned <span>Summary Board</span></h1>
+        <p>Vessel status, location records and disposal workflow</p>
       </div>
       <div class="actions">
         <button id="resetFiltersBtn">Reset Filters</button>
@@ -243,7 +292,7 @@
       <div class="card stat-card stat-abandoned"><div class="stat-top"><div class="icon-box">🛶</div><div><div class="stat-label">Abandoned</div><div class="stat-value" id="statAbandoned">0</div><div class="stat-sub">Total abandoned vessels</div></div></div></div>
       <div class="card stat-card stat-wip"><div class="stat-top"><div class="icon-box">🧾</div><div><div class="stat-label">Abandoned - WIP</div><div class="stat-value" id="statAbandonedWip">0</div><div class="stat-sub">In progress before final disposal stage</div></div></div></div>
       <div class="card stat-card stat-ready"><div class="stat-top"><div class="icon-box">✅</div><div><div class="stat-label">Abandoned - Ready to dispose</div><div class="stat-value" id="statAbandonedReady">0</div><div class="stat-sub">Final Notice completed</div></div></div></div>
-      <div class="card stat-card stat-completed"><div class="stat-top"><div class="icon-box">📦</div><div><div class="stat-label">Completed</div><div class="stat-value" id="statCompleted">0</div><div class="stat-sub" id="statCompletedBreakdown">Wreck 0 / Abandoned 0</div></div></div></div>
+      <div class="card stat-card stat-completed"><div class="stat-top completed-stat-layout"><div class="icon-box">📦</div><div class="completed-total"><div class="stat-label">Completed</div><div class="stat-value" id="statCompleted">0</div><div class="stat-sub" id="statCompletedBreakdown">Wreck 0 / Abandoned 0</div></div><div class="completed-periods"><div class="completed-period-item"><span>Last 30 days</span><strong id="statCompleted30Days">0</strong></div><div class="completed-period-item"><span>Last 12 months</span><strong id="statCompleted12Months">0</strong></div></div></div></div>
     </div>
 
     <div class="card">
@@ -696,8 +745,16 @@
       el('statAbandoned').textContent = activeSource.filter(r => r.type === 'Abandoned').length;
       el('statAbandonedWip').textContent = activeSource.filter(r => r.type === 'Abandoned' && deriveStatus(r) === 'WIP').length;
       el('statAbandonedReady').textContent = activeSource.filter(r => r.type === 'Abandoned' && deriveStatus(r) === 'Ready to dispose').length;
+      const now = Date.now();
+      const days30Ms = 30 * 24 * 60 * 60 * 1000;
+      const months12Start = new Date();
+      months12Start.setMonth(months12Start.getMonth() - 12);
+      const completed30Days = completedSource.filter(r => { const t = new Date(r.deletedAt).getTime(); return Number.isFinite(t) && t >= now - days30Ms && t <= now; }).length;
+      const completed12Months = completedSource.filter(r => { const t = new Date(r.deletedAt).getTime(); return Number.isFinite(t) && t >= months12Start.getTime() && t <= now; }).length;
       el('statCompleted').textContent = totalCompleted;
       el('statCompletedBreakdown').textContent = `Wreck ${wreckCompleted} / Abandoned ${abandonedCompleted}`;
+      el('statCompleted30Days').textContent = completed30Days;
+      el('statCompleted12Months').textContent = completed12Months;
     }
 
     function popupHtml(r) {
