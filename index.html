@@ -271,6 +271,215 @@
     @media(max-width:1450px) and (min-width:761px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.stat-completed{grid-column:span 2}.completed-stat-layout{grid-template-columns:42px minmax(130px,1fr) minmax(160px,1fr)}}
     @media(max-width:760px){.completed-stat-layout{grid-template-columns:36px minmax(88px,1fr);align-items:start}.completed-periods{grid-column:1 / -1;grid-template-columns:1fr 1fr;padding:10px 0 0;border-left:0;border-top:1px solid rgba(149,190,219,.20)}.completed-period-item strong{font-size:18px}.completed-period-item span{white-space:normal}}
 
+
+
+/* ===== Mobile UX optimisation, desktop layout unchanged ===== */
+@media (max-width: 760px) {
+  html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+  body { -webkit-text-size-adjust: 100%; padding-bottom: env(safe-area-inset-bottom); }
+  .container { width: 100%; max-width: 100%; padding: 8px 8px calc(22px + env(safe-area-inset-bottom)); }
+
+  /* Compact app header */
+  .header { display: block; margin-bottom: 10px; padding: 13px 12px 12px; }
+  .brand-block { min-width: 0; width: 100%; }
+  .eyebrow { gap: 8px; line-height: 1.2; }
+  .brand-block h1 { margin: 8px 0 2px; font-size: 23px; line-height: 1.08; }
+  .header .actions { display: grid; grid-template-columns: 1fr 1fr; width: 100%; margin-top: 12px; gap: 8px; }
+  .header .actions button { min-height: 44px; padding: 8px 7px; font-size: 11px; line-height: 1.2; }
+
+  /* Summary cards: four compact cards plus a full-width completed card */
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .stat-card { min-width: 0; padding: 12px; border-radius: 14px; }
+  .stat-top { gap: 9px; align-items: center; }
+  .icon-box { flex: 0 0 34px; width: 34px; height: 34px; font-size: 16px; }
+  .stat-label { font-size: 10px; line-height: 1.25; }
+  .stat-value { font-size: 25px; }
+  .stat-sub { display: none; }
+  .stat-completed { grid-column: 1 / -1; }
+  .completed-stat-layout { grid-template-columns: 34px minmax(78px, .75fr) minmax(145px, 1.25fr); align-items: center; gap: 10px; }
+  .completed-periods { grid-column: auto; grid-template-columns: 1fr; padding: 0 0 0 10px; border-top: 0; border-left: 1px solid rgba(149,190,219,.20); gap: 6px; }
+  .completed-period-item span { font-size: 10px; }
+  .completed-period-item strong { font-size: 17px; }
+
+  /* Filters */
+  .card { border-radius: 14px; }
+  .panel-head { padding: 14px 12px 0; }
+  .panel-title { font-size: 18px; }
+  .panel-desc { margin-top: 5px; font-size: 11px; line-height: 1.35; }
+  .panel-body { padding: 12px; }
+  .toolbar-row { margin-bottom: 10px; }
+  .toolbar-row .actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+  .toolbar-row .actions button { width: 100%; min-height: 44px; padding: 8px; }
+  .filters-grid { grid-template-columns: 1fr; gap: 8px; }
+  .field, select.field, textarea.field, input[type="date"].field,
+  input[type="number"].field, input[type="file"].field { min-height: 46px; border-radius: 12px; padding: 11px 12px; font-size: 16px; }
+
+  /* Main content order: map, details, card list */
+  .main-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .map-col, .detail-col, .mobile-list-card { width: 100%; min-width: 0; }
+  .map-col { order: 1; }
+  .detail-col { order: 2; }
+  .mobile-list-card { order: 3; }
+  #map { height: min(52vh, 420px); min-height: 310px; border-radius: 12px; }
+  .legend { grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .legend-item { min-width: 0; padding: 8px; justify-content: flex-start; font-size: 10px; line-height: 1.2; }
+  .legend-dot { flex: 0 0 10px; width: 10px; height: 10px; }
+
+  /* Details */
+  .detail-card { position: static; }
+  .detail-top { padding: 12px; margin-bottom: 10px; border-radius: 12px; }
+  .detail-top-title { margin-top: 8px; font-size: 20px; }
+  .detail-top-sub { font-size: 12px; line-height: 1.4; }
+  .detail-top-row > div:first-child { min-width: 0; flex: 1; }
+  .detail-top-row button { min-width: 62px; min-height: 42px; }
+  .badges { gap: 6px; }
+  .badge { padding: 6px 9px; font-size: 10px; }
+  .detail-grid { grid-template-columns: 1fr; gap: 8px; }
+  .detail-item { padding: 11px 12px; border-radius: 12px; }
+  .detail-key { font-size: 11px; }
+  .detail-val { margin-top: 4px; font-size: 14px; line-height: 1.45; }
+  .detail-sub { font-size: 11px; }
+
+  /* Photos */
+  .photo-card { border-radius: 13px; }
+  .photo-main { width: 100%; max-height: 48vh; object-fit: contain; }
+  .photo-caption { padding: 8px 10px; font-size: 10px; }
+  .thumb-strip { display: flex; overflow-x: auto; gap: 8px; padding: 9px; scroll-snap-type: x proximity; }
+  .thumb-item { flex: 0 0 82px; width: 82px; scroll-snap-align: start; }
+  .thumb-item img { height: 64px; }
+
+  /* Notes */
+  .notes-section { border-radius: 13px; }
+  .notes-header, .notes-add, .notes-list { padding-left: 11px; padding-right: 11px; }
+  .notes-add-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .notes-add-row textarea { min-height: 92px; }
+  .notes-add-row button { width: 100%; min-height: 44px; }
+  .notes-list { max-height: 280px; }
+  .note-item { padding: 11px; border-radius: 11px; }
+
+  /* Mobile vessel list cards */
+  .mobile-list-card .panel-desc { display: none; }
+  .mobile-list-card .panel-body { padding-top: 10px; }
+  .split-table-title { position: static; padding: 12px 2px 8px; background: transparent; border: 0; font-size: 17px; }
+  .mobile-list-grid { gap: 8px; }
+  .mobile-vessel-card { padding: 12px; border-radius: 13px; gap: 8px; }
+  .mobile-vessel-title { font-size: 15px; }
+  .mobile-vessel-row { grid-template-columns: 86px minmax(0,1fr); gap: 8px; font-size: 12px; }
+  .mobile-vessel-actions button { min-height: 38px; }
+
+  /* Full-screen edit/insert modal with sticky controls */
+  .modal-backdrop { padding: 0; align-items: stretch; }
+  .modal-card { width: 100%; height: 100dvh; max-height: none; border: 0; border-radius: 0; }
+  .modal-head { flex: 0 0 auto; position: sticky; top: 0; z-index: 20; padding: calc(12px + env(safe-area-inset-top)) 13px 12px; }
+  .modal-title { font-size: 17px; }
+  .modal-head button { min-height: 42px; }
+  .modal-body { padding: 13px 12px calc(92px + env(safe-area-inset-bottom)); }
+  .form-grid { grid-template-columns: 1fr; gap: 11px; }
+  .form-grid .full { grid-column: auto; }
+  .dmm-fieldset { grid-template-columns: minmax(0,.85fr) minmax(0,1.25fr) 38px; gap: 6px; }
+  .hemisphere-box { height: 46px; border-radius: 11px; }
+  .preview-strip { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 7px; }
+  .preview-thumb img { height: 78px; }
+  .modal-actions { position: sticky; bottom: calc(-92px - env(safe-area-inset-bottom)); z-index: 20; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 18px -12px calc(-92px - env(safe-area-inset-bottom)); padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: rgba(11,33,54,.97); border-top: 1px solid var(--line); backdrop-filter: blur(14px); }
+  .modal-actions button { width: 100%; min-height: 46px; padding: 9px; }
+  .modal-actions #deleteVesselBtn:not(.hidden) { grid-column: 1 / -1; }
+
+  /* Mobile lightbox */
+  .lightbox-backdrop { padding: 0; }
+  .lightbox-card { width: 100%; height: 100dvh; border-radius: 0; }
+  .lightbox-head { align-items: flex-start; padding: calc(10px + env(safe-area-inset-top)) 10px 10px; }
+  .lightbox-title { max-width: 34%; font-size: 11px; line-height: 1.3; }
+  .lightbox-controls { justify-content: flex-end; gap: 5px; }
+  .lightbox-controls button { min-width: 38px; min-height: 38px; padding: 6px; font-size: 11px; }
+  .lightbox-stage { touch-action: none; }
+  .lightbox-foot { padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); font-size: 10px; }
+
+  /* General touch and overflow safety */
+  button, .thumb-item, .mobile-vessel-card, tbody tr { touch-action: manipulation; }
+  button { min-height: 42px; }
+  img { max-width: 100%; }
+}
+
+@media (max-width: 390px) {
+  .brand-block h1 { font-size: 21px; }
+  .header .actions button, .toolbar-row .actions button { font-size: 10px; }
+  .completed-stat-layout { grid-template-columns: 32px minmax(68px,.7fr) minmax(132px,1.3fr); gap: 8px; }
+  .completed-periods { padding-left: 8px; }
+  .mobile-vessel-row { grid-template-columns: 78px minmax(0,1fr); }
+  .preview-strip { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
+
+
+/* ===== Mobile split vessel lists: Wreck and Abandoned ===== */
+@media (max-width: 760px) {
+  .mobile-list-card { background: transparent; border: 0; box-shadow: none; }
+  .mobile-list-card > .panel-head { display: none; }
+  .mobile-list-card > .panel-body { padding: 0; }
+  .mobile-table-host { display: grid !important; gap: 12px; }
+  .mobile-vessel-section {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: linear-gradient(145deg,rgba(14,38,61,.97),rgba(8,25,43,.97));
+    box-shadow: var(--shadow);
+  }
+  .mobile-vessel-section-head {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 13px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(12,41,64,.98);
+    backdrop-filter: blur(12px);
+  }
+  .mobile-vessel-section-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 850;
+    color: var(--text);
+  }
+  .mobile-vessel-section-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    padding: 4px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #102d46;
+    color: #c7dfec;
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .mobile-vessel-section-list {
+    display: grid;
+    gap: 8px;
+    max-height: 515px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(143,168,189,.55) transparent;
+  }
+  .mobile-vessel-section-list::-webkit-scrollbar { width: 6px; }
+  .mobile-vessel-section-list::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(143,168,189,.55);
+  }
+  .mobile-vessel-section .mobile-list-empty { margin: 0; }
+}
+
+@media (max-width: 390px) {
+  .mobile-vessel-section-list { max-height: 485px; padding: 8px; }
+  .mobile-vessel-section-head { padding: 11px; }
+}
+
 </style>
 </head>
 <body>
@@ -854,7 +1063,14 @@
                   <div class="mobile-vessel-row"><div class="mobile-vessel-key">MTA expiry</div><div class="mobile-vessel-value">${expiryText}</div></div>
                 </div>`;
             }).join('') : `<div class="mobile-list-empty">No ${title} vessels match the current filter.</div>`;
-            return `<h3 class="split-table-title">${title}</h3><div class="mobile-list-grid">${rows}</div>`;
+            return `
+              <section class="mobile-vessel-section" aria-label="${escapeHtml(title)} vessel list">
+                <div class="mobile-vessel-section-head">
+                  <h3 class="mobile-vessel-section-title">${escapeHtml(title)}</h3>
+                  <span class="mobile-vessel-section-count">${list.length}</span>
+                </div>
+                <div class="mobile-vessel-section-list">${rows}</div>
+              </section>`;
           };
           mobileHost.innerHTML = renderMobileSection('Wreck', wreckList) + renderMobileSection('Abandoned', abandonedList);
         }
