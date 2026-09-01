@@ -522,8 +522,8 @@
     // Replace the placeholders below before deployment.
     // Note: because email login was removed, your Supabase RLS policies must allow anon access
     // for the required tables/storage actions if you want the app to work without authentication.
-    const SUPABASE_URL = 'https://hjrcnsuzrztaiwnttxnr.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_8vscwHQ7y50eUj-RywvmLQ_JGpSp2HE';
+    const SUPABASE_URL = 'https://wgwlnutnstrfuiiunlcu.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_iC7kbinoy61_5eQCnrV25Q_OioA7Y1x';
     const SUPABASE_BUCKET = 'wreck-abandoned-photos';
 
     const state = {
@@ -1210,9 +1210,9 @@
         return;
       }
       const [{ data: vesselRows, error: vesselError }, { data: noteRows, error: noteError }, { data: photoRows, error: photoError }] = await Promise.all([
-        supabaseClient.from('vessels').select('*').order('created_at', { ascending: false }),
-        supabaseClient.from('vessel_notes').select('*').order('created_at', { ascending: false }),
-        supabaseClient.from('vessel_photos').select('*').order('created_at', { ascending: true })
+        supabaseClient.from('wreck_abandoned_vessels').select('*').order('created_at', { ascending: false }),
+        supabaseClient.from('wreck_abandoned_notes').select('*').order('created_at', { ascending: false }),
+        supabaseClient.from('wreck_abandoned_photos').select('*').order('created_at', { ascending: true })
       ]);
       if (vesselError) throw vesselError;
       if (noteError) throw noteError;
@@ -1283,7 +1283,7 @@
       }
       const removedIds = removedPhotos.map(photo => photo.id).filter(Boolean);
       if (removedIds.length) {
-        const { error: deleteError } = await supabaseClient.from('vessel_photos').delete().in('id', removedIds);
+        const { error: deleteError } = await supabaseClient.from('wreck_abandoned_photos').delete().in('id', removedIds);
         if (deleteError) throw deleteError;
       }
     }
@@ -1299,7 +1299,7 @@
         rows.push({ vessel_id: vesselId, storage_path: path, original_filename: item.file.name || safeName, mime_type: item.file.type || null, file_size: item.file.size || null, created_by: null });
       }
       if (rows.length) {
-        const { error } = await supabaseClient.from('vessel_photos').insert(rows);
+        const { error } = await supabaseClient.from('wreck_abandoned_photos').insert(rows);
         if (error) throw error;
       }
     }
@@ -1316,20 +1316,20 @@
           let savedRow = null;
           if (state.modalMode === 'edit') {
             payload.updated_by = null;
-            const { data, error } = await supabaseClient.from('vessels').update(payload).eq('id', state.editingId).select('*').single();
+            const { data, error } = await supabaseClient.from('wreck_abandoned_vessels').update(payload).eq('id', state.editingId).select('*').single();
             if (error) throw error;
             savedRow = data;
           } else {
             payload.created_by = null;
             payload.updated_by = null;
-            const { data, error } = await supabaseClient.from('vessels').insert(payload).select('*').single();
+            const { data, error } = await supabaseClient.from('wreck_abandoned_vessels').insert(payload).select('*').single();
             if (error) throw error;
             savedRow = data;
           }
           const keptExistingIds = new Set(state.pendingPhotos.filter(item => item.existingId).map(item => item.existingId).filter(Boolean));
           if (state.modalMode === 'edit' && editingRecord) await deleteRemovedExistingPhotos(editingRecord, keptExistingIds);
           const newPhotoItems = state.pendingPhotos.filter(item => item.file);
-          if (newPhotoItems.length) await uploadPendingPhotos(savedRow.id, newPhotoItems);if(completingNow){const {error}=await supabaseClient.from('vessel_notes').insert({vessel_id:savedRow.id,note_text:completionNote,created_by:null});if(error)throw error}
+          if (newPhotoItems.length) await uploadPendingPhotos(savedRow.id, newPhotoItems);if(completingNow){const {error}=await supabaseClient.from('wreck_abandoned_notes').insert({vessel_id:savedRow.id,note_text:completionNote,created_by:null});if(error)throw error}
           state.selectedId = savedRow.id;
           state.detailPhotoIndex = 0;
           closeModal();
@@ -1370,7 +1370,7 @@
       }
       if (isSupabaseActive()) {
         try {
-          const { error } = await supabaseClient.from('vessel_notes').insert({ vessel_id: rec.id, note_text: text, created_by: null });
+          const { error } = await supabaseClient.from('wreck_abandoned_notes').insert({ vessel_id: rec.id, note_text: text, created_by: null });
           if (error) throw error;
           await loadDataFromSupabase();
           renderAll(true, false, false);
@@ -1405,12 +1405,12 @@
           }
           const photoIds = photoMeta.map(photo => photo.id).filter(Boolean);
           if (photoIds.length) {
-            const { error: photoDeleteError } = await supabaseClient.from('vessel_photos').delete().in('id', photoIds);
+            const { error: photoDeleteError } = await supabaseClient.from('wreck_abandoned_photos').delete().in('id', photoIds);
             if (photoDeleteError) throw photoDeleteError;
           }
-          const { error: noteDeleteError } = await supabaseClient.from('vessel_notes').delete().eq('vessel_id', vesselId);
+          const { error: noteDeleteError } = await supabaseClient.from('wreck_abandoned_notes').delete().eq('vessel_id', vesselId);
           if (noteDeleteError) throw noteDeleteError;
-          const { error: vesselDeleteError } = await supabaseClient.from('vessels').delete().eq('id', vesselId);
+          const { error: vesselDeleteError } = await supabaseClient.from('wreck_abandoned_vessels').delete().eq('id', vesselId);
           if (vesselDeleteError) throw vesselDeleteError;
           if (state.selectedId === vesselId) state.selectedId = null;
           if (state.editingId === vesselId) closeModal();
@@ -1445,9 +1445,9 @@
       const noteText = `Delete Timestamp: ${formatDateTime(now)} — Vessel marked Completed. Coordinates cleared from map.`;
       if (isSupabaseActive()) {
         try {
-          const { error: vesselError } = await supabaseClient.from('vessels').update({ lat: null, lon: null, deleted_at: now, updated_by: null }).eq('id', state.editingId);
+          const { error: vesselError } = await supabaseClient.from('wreck_abandoned_vessels').update({ lat: null, lon: null, deleted_at: now, updated_by: null }).eq('id', state.editingId);
           if (vesselError) throw vesselError;
-          const { error: noteError } = await supabaseClient.from('vessel_notes').insert({ vessel_id: state.editingId, note_text: noteText, created_by: null });
+          const { error: noteError } = await supabaseClient.from('wreck_abandoned_notes').insert({ vessel_id: state.editingId, note_text: noteText, created_by: null });
           if (noteError) throw noteError;
           state.selectedId = state.editingId;
           closeModal();
