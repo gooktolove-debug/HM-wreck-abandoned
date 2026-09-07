@@ -480,7 +480,67 @@
   .mobile-vessel-section-head { padding: 11px; }
 }
 
-</style>
+
+    /* Completed date range summary */
+    .completed-range-panel{margin-top:14px;padding:14px;border:1px solid rgba(149,190,219,.20);border-radius:14px;background:rgba(7,21,36,.55)}
+    .completed-range-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+    .completed-range-title{font-size:13px;font-weight:850;color:var(--text)}
+    .completed-range-help{margin-top:3px;color:var(--muted);font-size:11px}
+    .completed-range-inputs{display:grid;grid-template-columns:minmax(150px,1fr) minmax(150px,1fr) auto;gap:10px;align-items:end}
+    .completed-range-field label{display:block;margin-bottom:6px;color:var(--muted);font-size:11px;font-weight:700}
+    .completed-range-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+    .completed-range-result{padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#0c2940}
+    .completed-range-result span{display:block;color:var(--muted);font-size:10px;font-weight:750}
+    .completed-range-result strong{display:block;margin-top:4px;color:var(--text);font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
+    .completed-range-result.wreck strong{color:#ffc078}
+    .completed-range-result.abandoned strong{color:#83c8ff}
+    .completed-range-message{margin-top:9px;color:var(--muted);font-size:11px;line-height:1.4}
+    .completed-range-message.error{color:#ff9b95;font-weight:750}
+    @media(max-width:760px){
+      .completed-range-panel{padding:11px;margin-top:10px}
+      .completed-range-inputs{grid-template-columns:1fr 1fr}
+      .completed-range-inputs button{grid-column:1 / -1;width:100%}
+      .completed-range-results{grid-template-columns:1fr 1fr}
+      .completed-range-result.total{grid-column:1 / -1}
+    }
+
+  
+    /* Improve date picker visibility on the dark UI */
+    #completedFromDate,
+    #completedToDate {
+      color-scheme: dark;
+    }
+    #completedFromDate::-webkit-calendar-picker-indicator,
+    #completedToDate::-webkit-calendar-picker-indicator {
+      filter: invert(1) brightness(2);
+      opacity: 1;
+      cursor: pointer;
+    }
+
+  
+    /* Force a clearly visible white calendar icon across Chromium browsers */
+    #completedFromDate,
+    #completedToDate {
+      color-scheme: dark;
+      padding-right: 46px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 10h18'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 18px 18px;
+    }
+    #completedFromDate::-webkit-calendar-picker-indicator,
+    #completedToDate::-webkit-calendar-picker-indicator {
+      position: absolute;
+      right: 0;
+      width: 44px;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .completed-range-field { position: relative; }
+
+  </style>
 </head>
 <body>
   <div class="container">
@@ -524,6 +584,31 @@
             <option value="Abandoned">Abandoned</option>
           </select>
         </div>
+        <section class="completed-range-panel" aria-labelledby="completedRangeTitle">
+          <div class="completed-range-head">
+            <div>
+              <div class="completed-range-title" id="completedRangeTitle">Completed by Date Range</div>
+              <div class="completed-range-help">Counts vessels completed from the start date through the end date, inclusive.</div>
+            </div>
+          </div>
+          <div class="completed-range-inputs">
+            <div class="completed-range-field">
+              <label for="completedFromDate">From</label>
+              <input id="completedFromDate" class="field" type="date" />
+            </div>
+            <div class="completed-range-field">
+              <label for="completedToDate">To</label>
+              <input id="completedToDate" class="field" type="date" />
+            </div>
+            <button id="clearCompletedRangeBtn" type="button">Clear Dates</button>
+          </div>
+          <div class="completed-range-results" aria-live="polite">
+            <div class="completed-range-result wreck"><span>Completed Wreck</span><strong id="completedRangeWreck">0</strong></div>
+            <div class="completed-range-result abandoned"><span>Completed Abandoned</span><strong id="completedRangeAbandoned">0</strong></div>
+            <div class="completed-range-result total"><span>Total Completed</span><strong id="completedRangeTotal">0</strong></div>
+          </div>
+          <div class="completed-range-message" id="completedRangeMessage">Select both dates to calculate the completed counts.</div>
+        </section>
       </div>
     </div>
 
@@ -942,6 +1027,44 @@
       if (!state.filtered.some(r => r.id === state.selectedId)) state.selectedId = state.filtered[0]?.id || null;
     }
 
+    function localDateKey(value) {
+      if (!value) return '';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return '';
+      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 10);
+    }
+    function renderCompletedRangeSummary() {
+      const fromEl = el('completedFromDate');
+      const toEl = el('completedToDate');
+      const messageEl = el('completedRangeMessage');
+      if (!fromEl || !toEl || !messageEl) return;
+      const from = fromEl.value;
+      const to = toEl.value;
+      let wreckCount = 0;
+      let abandonedCount = 0;
+      messageEl.classList.remove('error');
+      if (!from || !to) {
+        messageEl.textContent = 'Select both dates to calculate the completed counts.';
+      } else if (from > to) {
+        messageEl.textContent = 'The From date must be on or before the To date.';
+        messageEl.classList.add('error');
+      } else {
+        state.records.forEach((record) => {
+          if (!record.deletedAt) return;
+          const completedDate = localDateKey(record.deletedAt);
+          if (!completedDate || completedDate < from || completedDate > to) return;
+          if (record.type === 'Wreck') wreckCount += 1;
+          if (record.type === 'Abandoned') abandonedCount += 1;
+        });
+        const fromText = formatDate(from);
+        const toText = formatDate(to);
+        messageEl.textContent = `Completed from ${fromText} to ${toText}, inclusive. Counts use the saved Completion Date.`;
+      }
+      el('completedRangeWreck').textContent = wreckCount;
+      el('completedRangeAbandoned').textContent = abandonedCount;
+      el('completedRangeTotal').textContent = wreckCount + abandonedCount;
+    }
     function renderStats() {
       const source = state.filtered.length ? state.filtered : state.records;
       const activeSource = source.filter(r => !r.deletedAt);
@@ -964,6 +1087,7 @@
       el('statCompletedBreakdown').textContent = `Wreck ${wreckCompleted} / Abandoned ${abandonedCompleted}`;
       el('statCompleted30Days').textContent = completed30Days;
       el('statCompleted12Months').textContent = completed12Months;
+      renderCompletedRangeSummary();
     }
 
     function popupHtml(r) {
@@ -1406,23 +1530,39 @@
       });
     }
 
+    function absoluteSupabaseUrl(value) {
+      if (!value) return null;
+      if (/^https?:/i.test(value)) return value;
+      return `${SUPABASE_URL}${value.startsWith('/') ? '' : '/'}${value}`;
+    }
     async function createSignedUrlMap(paths) {
       const uniquePaths = [...new Set((paths || []).filter(Boolean))];
-      const signed = {};
-      for (let i = 0; i < uniquePaths.length; i += 100) {
-        const batch = uniquePaths.slice(i, i + 100);
-        const { data, error } = await supabaseClient.storage.from(SUPABASE_BUCKET).createSignedUrls(batch, 60 * 60 * 6);
-        if (error) { console.error('Signed URL batch error:', error); continue; }
+      if (!uniquePaths.length) return {};
+      const signedUrlMap = {};
+      const batchSize = 100;
+      const batches = [];
+      for (let start = 0; start < uniquePaths.length; start += batchSize) {
+        batches.push(uniquePaths.slice(start, start + batchSize));
+      }
+      const responses = await Promise.all(batches.map(batch =>
+        supabaseClient.storage.from(SUPABASE_BUCKET).createSignedUrls(batch, 60 * 60 * 6)
+          .then(result => ({ batch, ...result }))
+      ));
+      responses.forEach(({ batch, data, error }) => {
+        if (error) {
+          console.error('Signed URL batch error:', error);
+          return;
+        }
         (data || []).forEach((item, index) => {
           const path = item.path || batch[index];
-          const url = item.signedUrl;
-          if (path && url) signed[path] = /^https?:/i.test(url) ? url : `${SUPABASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+          if (path && item.signedUrl) signedUrlMap[path] = absoluteSupabaseUrl(item.signedUrl);
         });
-      }
-      return signed;
+      });
+      return signedUrlMap;
     }
 
     async function loadDataFromSupabase() {
+      const loadStartedAt = performance.now();
       if (!isSupabaseActive()) {
         state.records = [];
         state.selectedId = null;
@@ -1792,6 +1932,13 @@
     function initEvents() {
       el('f_vesselName').addEventListener('input', () => renderAll(true, false, true));
       el('f_type').addEventListener('change', () => renderAll(true, false, false));
+      el('completedFromDate').addEventListener('change', renderCompletedRangeSummary);
+      el('completedToDate').addEventListener('change', renderCompletedRangeSummary);
+      el('clearCompletedRangeBtn').addEventListener('click', () => {
+        el('completedFromDate').value = '';
+        el('completedToDate').value = '';
+        renderCompletedRangeSummary();
+      });
       el('resetFiltersBtn').addEventListener('click', resetFilters);
       el('fitAllBtn').addEventListener('click', fitAllPins);
       el('insertVesselBtn').addEventListener('click', () => openModal('insert'));
