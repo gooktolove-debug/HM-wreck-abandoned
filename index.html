@@ -505,42 +505,8 @@
     }
 
   
-    /* Improve date picker visibility on the dark UI */
-    #completedFromDate,
-    #completedToDate {
-      color-scheme: dark;
-    }
-    #completedFromDate::-webkit-calendar-picker-indicator,
-    #completedToDate::-webkit-calendar-picker-indicator {
-      filter: invert(1) brightness(2);
-      opacity: 1;
-      cursor: pointer;
-    }
-
-  
-    /* Force a clearly visible white calendar icon across Chromium browsers */
-    #completedFromDate,
-    #completedToDate {
-      color-scheme: dark;
-      padding-right: 46px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M3 10h18'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      background-size: 18px 18px;
-    }
-    #completedFromDate::-webkit-calendar-picker-indicator,
-    #completedToDate::-webkit-calendar-picker-indicator {
-      position: absolute;
-      right: 0;
-      width: 44px;
-      height: 100%;
-      margin: 0;
-      opacity: 0;
-      cursor: pointer;
-    }
-    .completed-range-field { position: relative; }
-
-  </style>
+.oa-bg{position:fixed;inset:0;z-index:8000;background:rgba(2,10,18,.88);padding:16px}.oa-shell{height:calc(100dvh - 32px);max-width:1500px;margin:auto;background:#081b2d;border:1px solid var(--line);border-radius:18px;display:flex;flex-direction:column;overflow:hidden}.oa-head{padding:14px 16px;background:#0d263d;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}.oa-title{font-size:21px;font-weight:850}.oa-tools{padding:12px 16px;border-bottom:1px solid var(--line)}.oa-filter{display:grid;grid-template-columns:1fr 1fr auto;gap:9px;align-items:end}.oa-counts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.oa-count{padding:9px 11px;background:#0c2940;border:1px solid var(--line);border-radius:11px}.oa-count small{display:block;color:var(--muted)}.oa-count strong{font-size:21px}.oa-body{display:grid;grid-template-columns:minmax(340px,.8fr) minmax(500px,1.2fr);gap:12px;padding:12px;min-height:0;flex:1}.oa-pane{border:1px solid var(--line);border-radius:13px;background:#0b2136;overflow:auto;padding:10px}.oa-section{display:flex;justify-content:space-between;position:sticky;top:-10px;background:#0c2940;padding:9px;z-index:2}.oa-list{display:grid;gap:7px;margin:8px 0 14px}.oa-row{padding:10px;background:#102d46;border:1px solid var(--line);border-radius:10px;cursor:pointer}.oa-row.active,.oa-row:hover{border-color:#29d3c2}.oa-meta{font-size:11px;color:var(--muted);margin-top:4px}.oa-detail-title{font-size:24px;font-weight:850}.oa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.oa-item{padding:10px;background:#0c2940;border:1px solid var(--line);border-radius:10px}.oa-item.full{grid-column:1/-1}.oa-k{font-size:10px;color:var(--muted)}.oa-v{margin-top:4px;font-weight:700;white-space:pre-wrap}.oa-photo{width:120px;height:84px;object-fit:cover;border-radius:9px;margin:5px;cursor:pointer}.oa-form-bg{position:fixed;inset:0;z-index:9000;background:rgba(2,10,18,.82);display:flex;align-items:center;justify-content:center;padding:16px}.oa-form{width:min(760px,100%);max-height:94dvh;overflow:auto;background:#0b2136;border:1px solid var(--line);border-radius:16px;padding:16px}.oa-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.oa-form-grid .full{grid-column:1/-1}.oa-status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800}.oa-status.completed{background:var(--completed-soft);color:#cbd5e1}.oa-status.ready{background:var(--ready-soft);color:#78efaa}#oaFrom,#oaTo,#oaApproval,#oaDisposed{color-scheme:dark} @media(max-width:760px){.oa-bg{padding:0}.oa-shell{height:100dvh;border:0;border-radius:0}.oa-body{grid-template-columns:1fr;overflow:auto}.oa-pane{min-height:410px}.oa-filter{grid-template-columns:1fr 1fr}.oa-filter button{grid-column:1/-1}.oa-form-grid{grid-template-columns:1fr}.oa-form-grid .full{grid-column:auto}.oa-form-bg{padding:0}.oa-form{height:100dvh;max-height:none;border-radius:0}}
+</style>
 </head>
 <body>
   <div class="container">
@@ -551,6 +517,7 @@
         <p>Vessel status, location records and disposal workflow</p>
       </div>
       <div class="actions">
+        <button id="ownerApprovedBtn" class="primary">Owner Approved</button>
         <button id="resetFiltersBtn">Reset Filters</button>
         <button id="fitAllBtn">Zoom out to All Pins</button>
       </div>
@@ -700,6 +667,8 @@
     </div>
   </div>
 
+  <div id="oaBg" class="oa-bg hidden"><div class="oa-shell"><div class="oa-head"><div><div class="oa-title">Owner Approved</div><div class="panel-desc">Independent owner approval register</div></div><div class="actions"><button id="oaNew" class="primary">Add Record</button><button id="oaClose" class="danger">Close</button></div></div><div class="oa-tools"><div class="oa-filter"><div><label class="field-label">Owner Approval Date From</label><input id="oaFrom" class="field" type="date"></div><div><label class="field-label">Owner Approval Date To</label><input id="oaTo" class="field" type="date"></div><button id="oaClear">Clear Dates</button></div><div class="oa-counts"><div class="oa-count"><small>Wreck</small><strong id="oaWC">0</strong></div><div class="oa-count"><small>Abandoned</small><strong id="oaAC">0</strong></div><div class="oa-count"><small>Total</small><strong id="oaTC">0</strong></div></div></div><div class="oa-body"><div id="oaList" class="oa-pane"></div><div id="oaDetail" class="oa-pane"><div class="muted-box">Select a record.</div></div></div></div></div>
+  <div id="oaFormBg" class="oa-form-bg hidden"><form id="oaForm" class="oa-form"><div class="oa-head"><h3 id="oaFormTitle" class="modal-title">Owner Approved Record</h3><button id="oaFormClose" type="button" class="danger">Close</button></div><div class="oa-form-grid"><div><label class="field-label">Vessel Name</label><input id="oaName" class="field" required></div><div><label class="field-label">Classification</label><select id="oaType" class="field"><option>Abandoned</option><option>Wreck</option></select></div><div class="full"><label class="field-label">Owner Details</label><textarea id="oaOwner" class="field"></textarea></div><div><label class="field-label">Latitude</label><input id="oaLat" class="field" type="number" step="any"></div><div><label class="field-label">Longitude</label><input id="oaLon" class="field" type="number" step="any"></div><div><label class="field-label">Notified to HM</label><input id="oaNotified" class="field" type="date"></div><div><label class="field-label">Owner Approval Date</label><input id="oaApproval" class="field" type="date" required></div><div><label class="field-label">Date Disposed of</label><input id="oaDisposed" class="field" type="date"></div><div><label class="field-label">Status</label><input id="oaStatusView" class="field" readonly></div><div class="full"><label class="field-label">Add Photos</label><input id="oaFiles" class="field" type="file" accept="image/*" multiple></div></div><div class="modal-actions"><button id="oaDelete" type="button" class="danger hidden">Delete</button><button class="primary">Save</button></div></form></div>
   <div id="vesselModalBackdrop" class="modal-backdrop hidden" aria-hidden="true">
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="vesselModalTitle">
       <div class="modal-head">
@@ -1530,39 +1499,12 @@
       });
     }
 
-    function absoluteSupabaseUrl(value) {
-      if (!value) return null;
-      if (/^https?:/i.test(value)) return value;
-      return `${SUPABASE_URL}${value.startsWith('/') ? '' : '/'}${value}`;
-    }
     async function createSignedUrlMap(paths) {
-      const uniquePaths = [...new Set((paths || []).filter(Boolean))];
-      if (!uniquePaths.length) return {};
-      const signedUrlMap = {};
-      const batchSize = 100;
-      const batches = [];
-      for (let start = 0; start < uniquePaths.length; start += batchSize) {
-        batches.push(uniquePaths.slice(start, start + batchSize));
-      }
-      const responses = await Promise.all(batches.map(batch =>
-        supabaseClient.storage.from(SUPABASE_BUCKET).createSignedUrls(batch, 60 * 60 * 6)
-          .then(result => ({ batch, ...result }))
-      ));
-      responses.forEach(({ batch, data, error }) => {
-        if (error) {
-          console.error('Signed URL batch error:', error);
-          return;
-        }
-        (data || []).forEach((item, index) => {
-          const path = item.path || batch[index];
-          if (path && item.signedUrl) signedUrlMap[path] = absoluteSupabaseUrl(item.signedUrl);
-        });
-      });
-      return signedUrlMap;
+      const unique=[...new Set((paths||[]).filter(Boolean))], result={};
+      for(let i=0;i<unique.length;i+=100){const batch=unique.slice(i,i+100);const {data,error}=await supabaseClient.storage.from(SUPABASE_BUCKET).createSignedUrls(batch,21600);if(error){console.error(error);continue;}(data||[]).forEach((x,j)=>{const p=x.path||batch[j],u=x.signedUrl;if(p&&u)result[p]=/^https?:/i.test(u)?u:`${SUPABASE_URL}${u.startsWith('/')?'':'/'}${u}`;});}return result;
     }
 
     async function loadDataFromSupabase() {
-      const loadStartedAt = performance.now();
       if (!isSupabaseActive()) {
         state.records = [];
         state.selectedId = null;
@@ -1991,6 +1933,32 @@
       window.addEventListener('load', () => scheduleMapResize());
       initLightboxDrag();
     }
+
+    const OA='wreck_abandoned_owner_approved',OAP='wreck_abandoned_owner_approved_photos',OAN='wreck_abandoned_owner_approved_notes',oas={rows:[],id:null,edit:null};
+    const oad=v=>v?String(v).slice(0,10):''; const oast=r=>r.disposed_date?'Completed':'Ready to dispose';
+    async function oaLoad(){const [{data:r,error:a},{data:p,error:b},{data:n,error:c}]=await Promise.all([supabaseClient.from(OA).select('*').order('owner_approval_date',{ascending:false}),supabaseClient.from(OAP).select('*').order('created_at'),supabaseClient.from(OAN).select('*').order('created_at',{ascending:false})]);if(a||b||c)throw(a||b||c);const u=await createSignedUrlMap((p||[]).map(x=>x.storage_path)),pm={},nm={};(p||[]).forEach(x=>(pm[x.owner_approved_id]??=[]).push({...x,url:u[x.storage_path]}));(n||[]).forEach(x=>(nm[x.owner_approved_id]??=[]).push(x));oas.rows=(r||[]).map(x=>({...x,photos:pm[x.id]||[],notes:nm[x.id]||[]}));if(!oas.rows.some(x=>x.id===oas.id))oas.id=oas.rows[0]?.id||null;oaRender()}
+    function oaFiltered(){
+      const f=el('oaFrom').value,t=el('oaTo').value;
+      return oas.rows
+        .filter(x=>(!f||oad(x.owner_approval_date)>=f)&&(!t||oad(x.owner_approval_date)<=t))
+        .sort((a,b)=>{
+          const aCompleted=Boolean(a.disposed_date), bCompleted=Boolean(b.disposed_date);
+          if(aCompleted!==bCompleted) return aCompleted?1:-1;
+          const aDate=aCompleted?oad(a.disposed_date):oad(a.owner_approval_date);
+          const bDate=bCompleted?oad(b.disposed_date):oad(b.owner_approval_date);
+          const dateOrder=String(bDate||'').localeCompare(String(aDate||''));
+          if(dateOrder!==0) return dateOrder;
+          return String(a.vessel_name||'').localeCompare(String(b.vessel_name||''),'en',{sensitivity:'base',numeric:true});
+        });
+    }
+    function oaRender(){const q=oaFiltered(),w=q.filter(x=>x.type==='Wreck'),a=q.filter(x=>x.type==='Abandoned');el('oaWC').textContent=w.length;el('oaAC').textContent=a.length;el('oaTC').textContent=q.length;const sec=(t,z)=>`<h3 class="oa-section"><span>${t}</span><span>${z.length}</span></h3><div class="oa-list">${z.map(x=>`<div class="oa-row ${x.id===oas.id?'active':''}" data-id="${x.id}"><b>${escapeHtml(x.vessel_name)}</b><div class="oa-meta"><span class="oa-status ${x.disposed_date?'completed':'ready'}">${oast(x)}</span> · Approval ${formatDate(x.owner_approval_date)}${x.disposed_date?' · Disposed '+formatDate(x.disposed_date):''}</div></div>`).join('')||'<div class="muted-box">No records</div>'}</div>`;el('oaList').innerHTML=sec('Wreck',w)+sec('Abandoned',a);el('oaList').querySelectorAll('[data-id]').forEach(x=>x.onclick=()=>{oas.id=x.dataset.id;oaRender()});oaDetail()}
+    function oaDetail(){const r=oas.rows.find(x=>x.id===oas.id),h=el('oaDetail');if(!r){h.innerHTML='<div class="muted-box">Select a record.</div>';return}const it=(k,v,f='')=>`<div class="oa-item ${f}"><div class="oa-k">${k}</div><div class="oa-v">${escapeHtml(v||'-')}</div></div>`;h.innerHTML=`<div class="detail-top-row"><div><span class="oa-status ${r.disposed_date?'completed':'ready'}">${oast(r)}</span><div class="oa-detail-title">${escapeHtml(r.vessel_name)}</div></div><button id="oaEdit">Edit</button></div><div class="oa-grid">${it('Classification',r.type)}${it('Status',oast(r))}${it('Owner Details',r.owner,'full')}${it('Latitude',r.lat)}${it('Longitude',r.lon)}${it('Notified to HM',formatDate(r.notified_to_hm))}${it('Owner Approval Date',formatDate(r.owner_approval_date))}${it('Date Disposed of',formatDate(r.disposed_date))}<div class="oa-item full"><div class="oa-k">Photos</div>${r.photos.map(p=>`<img class="oa-photo" src="${p.url||''}" data-url="${p.url||''}">`).join('')||'<div class="oa-v">No photos</div>'}</div><div class="oa-item full"><div class="oa-k">Add Note</div><textarea id="oaNote" class="field"></textarea><button id="oaNoteAdd" class="primary">Add Note</button></div><div class="oa-item full"><div class="oa-k">Notes</div>${r.notes.map(n=>`<div class="note-item"><div class="note-item-meta">${formatDateTime(n.created_at)}</div>${escapeHtml(n.note_text)}</div>`).join('')||'<div class="oa-v">No notes</div>'}</div></div>`;el('oaEdit').onclick=()=>oaOpen(r);el('oaNoteAdd').onclick=()=>oaAddNote(r.id);h.querySelectorAll('[data-url]').forEach(x=>x.onclick=()=>window.open(x.dataset.url,'_blank','noopener'))}
+    function oaOpen(r=null){oas.edit=r?.id||null;el('oaFormTitle').textContent=r?'Edit Owner Approved Record':'Add Owner Approved Record';el('oaName').value=r?.vessel_name||'';el('oaType').value=r?.type||'Abandoned';el('oaOwner').value=r?.owner||'';el('oaLat').value=r?.lat??'';el('oaLon').value=r?.lon??'';el('oaNotified').value=oad(r?.notified_to_hm);el('oaApproval').value=oad(r?.owner_approval_date)||todayForDateInput();el('oaDisposed').value=oad(r?.disposed_date);el('oaStatusView').value=r&&r.disposed_date?'Completed':'Ready to dispose';el('oaFiles').value='';el('oaDelete').classList.toggle('hidden',!r);el('oaFormBg').classList.remove('hidden')}
+    async function oaSave(e){e.preventDefault();const disp=el('oaDisposed').value||null,p={vessel_name:el('oaName').value.trim(),type:el('oaType').value,owner:el('oaOwner').value.trim()||null,lat:el('oaLat').value===''?null:Number(el('oaLat').value),lon:el('oaLon').value===''?null:Number(el('oaLon').value),notified_to_hm:el('oaNotified').value||null,owner_approval_date:el('oaApproval').value,disposed_date:disp,status:disp?'completed':'ready_to_dispose'},q=oas.edit?await supabaseClient.from(OA).update(p).eq('id',oas.edit).select().single():await supabaseClient.from(OA).insert(p).select().single();if(q.error)throw q.error;for(const f of el('oaFiles').files){const path=`owner-approved/${q.data.id}/${Date.now()}-${makeRandomId()}-${sanitizeFileName(f.name)}`;const up=await supabaseClient.storage.from(SUPABASE_BUCKET).upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;const db=await supabaseClient.from(OAP).insert({owner_approved_id:q.data.id,storage_path:path,original_filename:f.name,mime_type:f.type||null,file_size:f.size||null});if(db.error)throw db.error}oas.id=q.data.id;el('oaFormBg').classList.add('hidden');await oaLoad()}
+    async function oaAddNote(id){const x=el('oaNote'),t=x.value.trim();if(!t)return;const q=await supabaseClient.from(OAN).insert({owner_approved_id:id,note_text:t,created_by:null});if(q.error)return alert(q.error.message);await oaLoad()}
+    async function oaDelete(){const r=oas.rows.find(x=>x.id===oas.edit);if(!r||!confirm(`Delete ${r.vessel_name}?`))return;const ps=r.photos.map(x=>x.storage_path);if(ps.length){const q=await supabaseClient.storage.from(SUPABASE_BUCKET).remove(ps);if(q.error)return alert(q.error.message)}const q=await supabaseClient.from(OA).delete().eq('id',r.id);if(q.error)return alert(q.error.message);el('oaFormBg').classList.add('hidden');oas.id=null;await oaLoad()}
+    function oaInit(){el('ownerApprovedBtn').onclick=async()=>{el('oaBg').classList.remove('hidden');document.body.style.overflow='hidden';try{await oaLoad()}catch(e){alert(e.message)}};el('oaClose').onclick=()=>{el('oaBg').classList.add('hidden');document.body.style.overflow=''};el('oaNew').onclick=()=>oaOpen();el('oaFormClose').onclick=()=>el('oaFormBg').classList.add('hidden');el('oaForm').onsubmit=e=>oaSave(e).catch(x=>alert(x.message));el('oaDelete').onclick=oaDelete;el('oaFrom').onchange=oaRender;el('oaTo').onchange=oaRender;el('oaClear').onclick=()=>{el('oaFrom').value='';el('oaTo').value='';oaRender()};el('oaDisposed').onchange=()=>el('oaStatusView').value=el('oaDisposed').value?'Completed':'Ready to dispose'}
+    window.addEventListener('DOMContentLoaded',oaInit);
 
     (async function bootstrap() {
       initEvents();
